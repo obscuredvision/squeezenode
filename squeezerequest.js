@@ -25,12 +25,23 @@
 var jayson = require('jayson');
 var inherits = require('super');
 
-function SqueezeRequest(address, port) {
+function SqueezeRequest(address, port, username, password) {
+  
     this.address = (address !== undefined) ? address : "localhost";
     this.port = (port !== undefined) ? port : 9000;
+    this.username = username;
+    this.password = password;
     var jsonrpc = this.address + ':' + this.port + '/jsonrpc.js';
     var client = jayson.client.http(jsonrpc);
     client.options.version = 1;
+
+    // Add a header for basic authentication if a username and password are given
+
+    if (username && password) {
+        if (! client.options.headers)
+            client.options.headers = {};
+        client.options.headers['Authorization'] = formatBasicHeader(username, password);
+    }
 
     function handle(err, reply, callback) {
         var result = {};
@@ -54,6 +65,16 @@ function SqueezeRequest(address, port) {
             handle(err, reply, callback);
         });
     };
+}
+
+/**
+ * Function to format the header for basic authentication.
+ */
+
+function formatBasicHeader(username, password) {
+  var tok = username + ':' + password;
+  var hash = new Buffer(tok).toString('base64');
+  return "Basic " + hash;
 }
 
 module.exports = SqueezeRequest;

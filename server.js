@@ -27,7 +27,8 @@ var fs = require('fs');
 var SqueezeRequest = require('./squeezerequest');
 var SqueezePlayer = require('./squeezeplayer');
 
-function SqueezeServer(address, port) {
+function SqueezeServer(address, port, username, password) {
+
     SqueezeServer.super_.apply(this, arguments);
     var defaultPlayer = "00:00:00:00:00:00";
     var self = this;
@@ -86,7 +87,7 @@ function SqueezeServer(address, port) {
             var players = reply.result;
             for (var pl in players) {
                 if (!self.players[players[pl].playerid]) { // player not on the list
-                    self.players[players[pl].playerid] = new SqueezePlayer(players[pl].playerid, players[pl].name, self.address, self.port);
+                    self.players[players[pl].playerid] = new SqueezePlayer(players[pl].playerid, players[pl].name, self.address, self.port, self.username, self.password);
                 }
             }
             self.emit('registerPlayers');
@@ -103,7 +104,7 @@ function SqueezeServer(address, port) {
                             for (var pl in apps) {
                                 if (fil === apps[pl].cmd) {
                                     var app = require(dir + file);
-                                    self.apps[apps[pl].cmd] = new app(defaultPlayer, apps[pl].name, apps[pl].cmd, self.address, self.port);
+                                    self.apps[apps[pl].cmd] = new app(defaultPlayer, apps[pl].name, apps[pl].cmd, self.address, self.port, self.username, self.password);
                                     /* workaround, app needs existing player id so first is used here */
                                 }
                             }

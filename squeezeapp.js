@@ -25,11 +25,11 @@
 var inherits = require('super');
 var SqueezeRequest = require('./squeezerequest');
 
-function SqueezeApp(defPlayerId, name, cmd, address, port) {
+function SqueezeApp(defPlayerId, name, cmd, address, port, username, password) {
     this.defPlayerId = defPlayerId;
     this.name = name;
     this.cmd = cmd;
-    SqueezeApp.super_.apply(this, [address, port]);
+    SqueezeApp.super_.apply(this, [address, port, username, password]);
 
 }
 

@@ -25,11 +25,12 @@
 var inherits = require('super');
 var SqueezeRequest = require('./squeezerequest');
 
-function SqueezePlayer(playerId, name, address, port) {
+function SqueezePlayer(playerId, name, address, port, username, password) {
+
     this.playerId = playerId;
     this.name = name;
 
-    SqueezePlayer.super_.apply(this, [address, port]);
+    SqueezePlayer.super_.apply(this, [address, port, username, password]);
 
     this.clearPlayList = function (callback) {
         this.request(playerId, ["playlist", "clear"], callback);
@@ -134,6 +135,21 @@ function SqueezePlayer(playerId, name, address, port) {
 
     this.setVolume = function(volume, callback) {
         this.request(playerId, ["mixer", "volume", volume], callback);
+    };
+
+    this.getVolume = function(callback) {
+        this.request(playerId, ["mixer", "volume", "?"], function(reply) {
+          if (reply.ok)
+              reply.result = reply.result._volume;
+          callback(reply);
+        });
+    };
+
+    this.randomPlay = function(target, callback) {
+        this.request(playerId, ["randomplay", target], callback);
+    };
+    this.power = function(state, callback) {
+        this.request(playerId, ["power", state], callback);
     };
 }
 
