@@ -56,6 +56,22 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
         });
     };
 
+    this.getArtist = function (callback) {
+        this.request(playerId, ["artist", "?"], function (reply) {
+            if (reply.ok)
+                reply.result = reply.result._artist;
+            callback(reply);
+        });
+    };
+
+    this.getAlbum = function (callback) {
+        this.request(playerId, ["album", "?"], function (reply) {
+            if (reply.ok)
+                reply.result = reply.result._album;
+            callback(reply);
+        });
+    };
+
     this.getCurrentRemoteMeta = function (callback) {
         this.request(playerId, ["status"], function (reply) {
             if (reply.ok)
