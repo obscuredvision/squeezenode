@@ -97,3 +97,8 @@ TODO
 * Better documentation
 * Add full API description
 * Add wiki
+
+squeezenode-lordpengwin
+-----------------------
+* Added suppport for HTTP basic auth
+* Added support for additional commands
