@@ -4,7 +4,7 @@
  Copyright (c) 2013-2015 Piotr Raczynski, pio[dot]raczynski[at]gmail[dot]com
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
+ of this software and associated documentation files (the 'Software'), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
@@ -13,7 +13,7 @@
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -22,150 +22,158 @@
  SOFTWARE.
  */
 
-var inherits = require('super');
-var SqueezeRequest = require('./squeezerequest');
+var inherits = require('super'),
+    SqueezeRequest = require('./squeezerequest');
 
 function SqueezePlayer(playerId, name, address, port, username, password) {
+    var self = this;
+    self.playerId = playerId;
+    self.name = name;
 
-    this.playerId = playerId;
-    this.name = name;
+    SqueezePlayer.super_.apply(self, [address, port, username, password]);
 
-    SqueezePlayer.super_.apply(this, [address, port, username, password]);
-
-    this.clearPlayList = function (callback) {
-        this.request(playerId, ["playlist", "clear"], callback);
+    self.clearPlayList = function () {
+        return self.request(playerId, ['playlist', 'clear']);
     };
 
-    this.getMode = function (callback) {
-        this.request(playerId, ["mode", "?"], callback);
+    self.getMode = function () {
+        return self.request(playerId, ['mode', '?']);
     };
 
-    this.setName = function (name, callback) {
-        this.request(playerId, ["name", name], callback);
+    self.setName = function (name) {
+        return self.request(playerId, ['name', name]);
     };
 
-    this.getName = function (callback) {
-        this.request(playerId, ["name", "?"], callback);
+    self.getName = function () {
+        return self.request(playerId, ['name', '?']);
     };
 
-    this.getCurrentTitle = function (callback) {
-        this.request(playerId, ["current_title", "?"], function (reply) {
-            if (reply.ok)
-                reply.result = reply.result._current_title;
-            callback(reply);
-        });
+    self.getCurrentTitle = function () {
+        return self.request(playerId, ['current_title', '?']).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result._current_title;
+                }
+                return reply;
+            });
     };
 
-    this.getArtist = function (callback) {
-        this.request(playerId, ["artist", "?"], function (reply) {
-            if (reply.ok)
-                reply.result = reply.result._artist;
-            callback(reply);
-        });
+    self.getArtist = function () {
+        return self.request(playerId, ['artist', '?']).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result._artist;
+                }
+                return reply;
+            });
     };
 
-    this.getAlbum = function (callback) {
-        this.request(playerId, ["album", "?"], function (reply) {
-            if (reply.ok)
-                reply.result = reply.result._album;
-            callback(reply);
-        });
+    self.getAlbum = function () {
+        return self.request(playerId, ['album', '?']).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result._album;
+                }
+                return reply;
+            });
     };
 
-    this.getCurrentRemoteMeta = function (callback) {
-        this.request(playerId, ["status"], function (reply) {
-            if (reply.ok)
-                reply.result = reply.result.remoteMeta;
-            callback(reply);
-        });
+    self.getCurrentRemoteMeta = function () {
+        return self.request(playerId, ['status']).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.remoteMeta;
+                }
+                return reply;
+            });
     };
 
-    this.getStatus = function (callback) {
-        this.request(playerId, ["status"], callback);
+    self.getStatus = function () {
+        return self.request(playerId, ['status']);
     };
 
-    this.getStatusWithPlaylist = function (from, to, callback) {
-        this.request(playerId, ["status", from, to], function (reply) {
-            if (reply.ok)
-                reply.result = reply.result;
-            callback(reply);
-        });
+    self.getStatusWithPlaylist = function (from, to) {
+        return self.request(playerId, ['status', from, to]);
     };
 
-    this.getPlaylist = function (from, to, callback) {
-        this.request(playerId, ["status", from, to], function (reply) {
-            if (reply.ok)
-                reply.result = reply.result.playlist_loop;
-            callback(reply);
-        });
+    self.getPlaylist = function (from, to) {
+        return self.request(playerId, ['status', from, to]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.playlist_loop;
+                }
+                return reply;
+            });
     };
 
-    this.play = function (callback) {
-        this.request(playerId, ["play"], callback);
+    self.play = function () {
+        return self.request(playerId, ['play']);
     };
 
-    this.playIndex = function (index, callback) {
-        console.log("index: " + index);
-        this.request(playerId, ["playlist", "index", index], callback);
+    self.playIndex = function (index) {
+        return self.request(playerId, ['playlist', 'index', index]);
     };
 
-    this.pause = function (callback) {
-        this.request(playerId, ["pause"], callback);
+    self.pause = function () {
+        return self.request(playerId, ['pause']);
     };
 
-    this.next = function (callback) {
-        this.request(playerId, ["button", "jump_rew"], callback);
+    self.next = function () {
+        return self.request(playerId, ['button', 'jump_rew']);
     };
 
-    this.previous = function (callback) {
-        this.request(playerId, ["button", "jump_rew"], callback);
+    self.previous = function () {
+        return self.request(playerId, ['button', 'jump_rew']);
     };
 
-    this.next = function (callback) {
-        this.request(playerId, ["button", "jump_fwd"], callback);
+    self.next = function () {
+        return self.request(playerId, ['button', 'jump_fwd']);
     };
 
-    this.playlistDelete = function(index, callback) {
-        this.request(playerId, ["playlist", "delete", index], callback);
+    self.playlistDelete = function (index) {
+        return self.request(playerId, ['playlist', 'delete', index]);
     };
 
-    this.playlistMove = function(fromIndex, toIndex, callback) {
-        this.request(playerId, ["playlist", "move", fromIndex, toIndex], callback);
+    self.playlistMove = function (fromIndex, toIndex) {
+        return self.request(playerId, ['playlist', 'move', fromIndex, toIndex]);
     };
 
-    this.playlistSave = function(playlistName, callback) {
-        this.request(playerId, ["playlist", "save", playlistName], callback);
+    self.playlistSave = function (playlistName) {
+        return self.request(playerId, ['playlist', 'save', playlistName]);
     };
 
-    this.sync = function(syncTo, callback) {
-        this.request(playerId, ["sync", syncTo], callback);
+    self.sync = function (syncTo) {
+        return self.request(playerId, ['sync', syncTo]);
     };
 
-    this.unSync = function(callback) {
-        this.request(playerId, ["sync", "-"], callback);
+    self.unSync = function () {
+        return self.request(playerId, ['sync', '-']);
     };
 
-    this.seek = function(seconds, callback) {
-        this.request(playerId, ["time", seconds], callback);
+    self.seek = function (seconds) {
+        return self.request(playerId, ['time', seconds]);
     };
 
-    this.setVolume = function(volume, callback) {
-        this.request(playerId, ["mixer", "volume", volume], callback);
+    self.setVolume = function (volume) {
+        return self.request(playerId, ['mixer', 'volume', volume]);
     };
 
-    this.getVolume = function(callback) {
-        this.request(playerId, ["mixer", "volume", "?"], function(reply) {
-          if (reply.ok)
-              reply.result = reply.result._volume;
-          callback(reply);
-        });
+    self.getVolume = function () {
+        return self.request(playerId, ['mixer', 'volume', '?']).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result._volume;
+                }
+                return reply;
+            });
     };
 
-    this.randomPlay = function(target, callback) {
-        this.request(playerId, ["randomplay", target], callback);
+    self.randomPlay = function (target) {
+        return self.request(playerId, ['randomplay', target]);
     };
-    this.power = function(state, callback) {
-        this.request(playerId, ["power", state], callback);
+
+    self.power = function (state) {
+        return self.request(playerId, ['power', state]);
     };
 }
 
