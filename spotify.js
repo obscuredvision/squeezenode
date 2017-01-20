@@ -40,9 +40,8 @@ function Spotify(defPlayerId, name, cmd, address, port) {
     function helperRequest(path, params) {
         return new Promise(function (resolve, reject) {
             var res = { ok: false };
-            console.log(params);
             request({ url: helperAddress + path + '?' + params }, function (error, response, body) {
-                if (error || response.statusCode >= 400) {
+                if (error || (response.statusCode >= 400 && response.statusCode <= 500)) {
                     reject();
                 } else {
                     res.ok = true;

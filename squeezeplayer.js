@@ -33,23 +33,23 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
     SqueezePlayer.super_.apply(self, [address, port, username, password]);
 
     self.clearPlayList = function () {
-        return self.request(playerId, ['playlist', 'clear']);
+        return self.request(self.playerId, ['playlist', 'clear']);
     };
 
     self.getMode = function () {
-        return self.request(playerId, ['mode', '?']);
+        return self.request(self.playerId, ['mode', '?']);
     };
 
     self.setName = function (name) {
-        return self.request(playerId, ['name', name]);
+        return self.request(self.playerId, ['name', name]);
     };
 
     self.getName = function () {
-        return self.request(playerId, ['name', '?']);
+        return self.request(self.playerId, ['name', '?']);
     };
 
     self.getCurrentTitle = function () {
-        return self.request(playerId, ['current_title', '?']).then(
+        return self.request(self.playerId, ['current_title', '?']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result._current_title;
@@ -59,7 +59,7 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
     };
 
     self.getArtist = function () {
-        return self.request(playerId, ['artist', '?']).then(
+        return self.request(self.playerId, ['artist', '?']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result._artist;
@@ -69,7 +69,7 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
     };
 
     self.getAlbum = function () {
-        return self.request(playerId, ['album', '?']).then(
+        return self.request(self.playerId, ['album', '?']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result._album;
@@ -79,7 +79,7 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
     };
 
     self.getCurrentRemoteMeta = function () {
-        return self.request(playerId, ['status']).then(
+        return self.request(self.playerId, ['status']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.remoteMeta;
@@ -89,15 +89,15 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
     };
 
     self.getStatus = function () {
-        return self.request(playerId, ['status']);
+        return self.request(self.playerId, ['status']);
     };
 
     self.getStatusWithPlaylist = function (from, to) {
-        return self.request(playerId, ['status', from, to]);
+        return self.request(self.playerId, ['status', from, to]);
     };
 
     self.getPlaylist = function (from, to) {
-        return self.request(playerId, ['status', from, to]).then(
+        return self.request(self.playerId, ['status', from, to]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.playlist_loop;
@@ -106,60 +106,98 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
             });
     };
 
-    self.play = function () {
-        return self.request(playerId, ['play']);
+    self.play = function (item, genre, artist, album) {
+        var params,
+            mgenre = (!genre) ? '*' : genre,
+            martist = (!artist) ? '*' : artist,
+            malbum = (!album) ? '*' : album;
+
+        if (!item && !genre && !artist && !album) {
+            params = ['play'];
+        } else if (item) {
+            params = ['playlist', 'play', item];
+        } else {
+            params = ['playlist', 'loadalbum', mgenre, martist, malbum]
+        }
+
+        return self.request(self.playerId, params);
     };
 
     self.playIndex = function (index) {
-        return self.request(playerId, ['playlist', 'index', index]);
+        return self.request(self.playerId, ['playlist', 'index', index]);
     };
 
-    self.pause = function () {
-        return self.request(playerId, ['pause']);
+    self.pause = function (pause) {
+        pause = (pause === 1 || !!pause) ? 1 : 0;
+        return self.request(self.playerId, ['pause', pause]);
+    };
+
+    self.mute = function (mute) {
+        mute = (mute === 1 || !!mute) ? 1 : 0;
+        return self.request(self.playerId, ['mixer', 'muting', mute]);
+    };
+
+    self.stop = function () {
+        return self.request(self.playerId, ['stop']);
     };
 
     self.next = function () {
-        return self.request(playerId, ['button', 'jump_rew']);
+        return self.request(self.playerId, ['button', 'jump_rew']);
     };
 
     self.previous = function () {
-        return self.request(playerId, ['button', 'jump_rew']);
+        return self.request(self.playerId, ['button', 'jump_rew']);
     };
 
     self.next = function () {
-        return self.request(playerId, ['button', 'jump_fwd']);
+        return self.request(self.playerId, ['button', 'jump_fwd']);
+    };
+
+    self.playlistAdd = function (item) {
+        return self.request(self.playerId, ['playlist', 'add', item]);
+    };
+
+    self.playlistInsert = function (item) {
+        return self.request(self.playerId, ['playlist', 'insert', item]);
+    };
+
+    self.playlistAddAlbum = function (genre, artist, album) {
+        var mgenre = (!genre) ? '*' : genre,
+            martist = (!artist) ? '*' : artist,
+            malbum = (!album) ? '*' : album
+        return self.request(self.playerId, ['playlist', 'addalbum', mgenre, martist, malbum]);
     };
 
     self.playlistDelete = function (index) {
-        return self.request(playerId, ['playlist', 'delete', index]);
+        return self.request(self.playerId, ['playlist', 'delete', index]);
     };
 
     self.playlistMove = function (fromIndex, toIndex) {
-        return self.request(playerId, ['playlist', 'move', fromIndex, toIndex]);
+        return self.request(self.playerId, ['playlist', 'move', fromIndex, toIndex]);
     };
 
     self.playlistSave = function (playlistName) {
-        return self.request(playerId, ['playlist', 'save', playlistName]);
+        return self.request(self.playerId, ['playlist', 'save', playlistName]);
     };
 
     self.sync = function (syncTo) {
-        return self.request(playerId, ['sync', syncTo]);
+        return self.request(self.playerId, ['sync', syncTo]);
     };
 
     self.unSync = function () {
-        return self.request(playerId, ['sync', '-']);
+        return self.request(self.playerId, ['sync', '-']);
     };
 
     self.seek = function (seconds) {
-        return self.request(playerId, ['time', seconds]);
+        return self.request(self.playerId, ['time', seconds]);
     };
 
     self.setVolume = function (volume) {
-        return self.request(playerId, ['mixer', 'volume', volume]);
+        return self.request(self.playerId, ['mixer', 'volume', volume]);
     };
 
     self.getVolume = function () {
-        return self.request(playerId, ['mixer', 'volume', '?']).then(
+        return self.request(self.playerId, ['mixer', 'volume', '?']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result._volume;
@@ -169,11 +207,11 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
     };
 
     self.randomPlay = function (target) {
-        return self.request(playerId, ['randomplay', target]);
+        return self.request(self.playerId, ['randomplay', target]);
     };
 
     self.power = function (state) {
-        return self.request(playerId, ['power', state]);
+        return self.request(self.playerId, ['power', state]);
     };
 }
 

@@ -34,21 +34,9 @@ function SqueezeServer(address, port, username, password) {
 
     SqueezeServer.super_.apply(self, arguments);
 
-    self.players = [];
-    self.apps = [];
+    self.players = {};
+    self.apps = {};
     self.playerUpdateInterval = 2000;
-
-    self.on = function (channel, sub) {
-        subs[channel] = subs[channel] || [];
-        subs[channel].push(sub);
-    };
-
-    self.emit = function (channel) {
-        var args = [].slice.call(arguments, 1);
-        for (var sub in subs[channel]) {
-            subs[channel][sub].apply(void 0, args);
-        }
-    };
 
     self.getPlayerCount = function () {
         return self.request(defaultPlayer, ['player', 'count', '?']);
@@ -84,44 +72,91 @@ function SqueezeServer(address, port, username, password) {
             });
     };
 
-    function register() {
-        self.getPlayers().then(function (reply) { // TODO refactor this
-            var players = reply.result;
-            for (var player in players) {
-                if (!self.players[players[player].playerid]) { // player not on the list
-                    self.players[players[player].playerid] = new SqueezePlayer(players[player].playerid,
-                        players[player].name, self.address, self.port, self.username, self.password);
-                }
-            }
-            self.emit('registerPlayers');
-        });
+    // searching
 
-        self.on('registerPlayers', function () {
-            self.getApps().then(function (reply) { // TODO refactor this
+    self.artists = function (artistName) {
+        return self.request(defaultPlayer, ['artists', "_", "_", "search:" + artistName]).then(
+            function (reply) {
                 if (reply.ok) {
-                    var apps = reply.result.appss_loop;
-                    var dir = __dirname + '/';
-                    fs.readdir(dir, function (err, files) {
-                        files.forEach(function (file) {
-                            var fil = file.substr(0, file.lastIndexOf('.'));
-                            for (var player in apps) {
-                                if (fil === apps[player].cmd) {
-                                    var app = require(dir + file);
-                                    self.apps[apps[player].cmd] = new app(defaultPlayer, apps[player].name,
-                                        apps[player].cmd, self.address, self.port, self.username, self.password);
-                                    /* workaround, app needs existing player id so first is used here */
-                                }
-                            }
-                        });
-                        self.emit('register');
+                    reply.result = reply.result.artists_loop;
+                    // {id, artist}
+                }
+                return reply;
+            });
+    };
+
+    self.albums = function (albumName) {
+        return self.request(defaultPlayer, ['albums', "_", "_", "search:" + albumName, "tags:tS"]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.albums_loop;
+                    // {id, title, artist_id}
+                }
+                return reply;
+            });
+    };
+
+    self.songs = function (songName) {
+        return self.request(defaultPlayer, ['songs', "_", "_", "search:" + songName, "tags:seu"]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.titles_loop;
+                    // {id, title, artist_id, album_id, url}
+                }
+                return reply;
+            });
+    };
+
+    self.register = function () {
+        return new Promise(function (resolve, reject) {
+            self.getPlayers().then(function (reply) {
+                var players = reply.result;
+
+                // clear players and apps before filling
+                self.players = {};
+                self.apps = {};
+
+                // set players
+                if (reply.ok) {
+                    players.forEach(function (player) {
+                        if (!self.players[player.playerid]) {
+                            // player not on the list, add it
+                            self.players[player.playerid] = new SqueezePlayer(player.playerid,
+                                player.name, self.address, self.port, self.username, self.password);
+                        }
                     });
-                } else
-                    self.emit('register');
+
+                    self.getApps().then(function (reply) {
+                        // set apps
+                        if (reply.ok) {
+                            var apps = reply.result.appss_loop,
+                                dir = __dirname + '/';
+                            fs.readdir(dir, function (err, files) {
+                                files.forEach(function (file) {
+                                    var app,
+                                        fil = file.substr(0, file.lastIndexOf('.'));
+
+                                    apps.forEach(function (player) {
+                                        if (fil === player.cmd) {
+                                            app = require(dir + file);
+                                            self.apps[player.cmd] = new app(defaultPlayer, player.name, player.cmd,
+                                                self.address, self.port, self.username, self.password);
+                                            /* workaround, app needs existing player id so first is used here */
+                                        }
+                                    });
+                                });
+                                resolve();
+                            });
+                        } else {
+                            reject(reply);
+                        }
+                    });
+                } else {
+                    reject(reply);
+                }
             });
         });
-    }
-
-    register();
+    };
 }
 
 inherits(SqueezeServer, SqueezeRequest);
