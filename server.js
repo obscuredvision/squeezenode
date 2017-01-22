@@ -83,7 +83,6 @@ function SqueezeServer(address, port, username, password) {
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.artists_loop;
-                    // {id, artist}
                 }
                 return reply;
             });
@@ -91,16 +90,15 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * Search for albums given album name
-     * Returns id, title, artist, artists, artist_id, artist_ids
+     * Returns {id, title, artist_id, artist_ids}
      * @param albumName
      * @return {*}
      */
     self.albums = function (albumName) {
-        return self.request(defaultPlayer, ['albums', "_", "_", "search:" + albumName, "tags:tSSaa"]).then(
+        return self.request(defaultPlayer, ['albums', "_", "_", "search:" + albumName, "tags:tSS"]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
-                    // {id, title, artist, artists, artist_id, artist_ids}
                 }
                 return reply;
             });
@@ -108,16 +106,15 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * Search for songs given song name
-     * Returns {id, title, artist_id, album_id, url, artist, album}
+     * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
      * @param songName
      * @return {*}
      */
     self.songs = function (songName) {
-        return self.request(defaultPlayer, ['songs', "_", "_", "search:" + songName, "tags:seual"]).then(
+        return self.request(defaultPlayer, ['songs', "_", "_", "search:" + songName, "tags:seuSp"]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
-                    // {id, title, artist_id, album_id, url, artist, album}
                 }
                 return reply;
             });
