@@ -72,8 +72,12 @@ function SqueezeServer(address, port, username, password) {
             });
     };
 
-    // searching
-
+    /**
+     * Search for artists given artist name
+     * Returns {id, artist}
+     * @param artistName
+     * @return {*}
+     */
     self.artists = function (artistName) {
         return self.request(defaultPlayer, ['artists', "_", "_", "search:" + artistName]).then(
             function (reply) {
@@ -85,23 +89,35 @@ function SqueezeServer(address, port, username, password) {
             });
     };
 
+    /**
+     * Search for albums given album name
+     * Returns id, title, artist, artists, artist_id, artist_ids
+     * @param albumName
+     * @return {*}
+     */
     self.albums = function (albumName) {
-        return self.request(defaultPlayer, ['albums', "_", "_", "search:" + albumName, "tags:tS"]).then(
+        return self.request(defaultPlayer, ['albums', "_", "_", "search:" + albumName, "tags:tSSaa"]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
-                    // {id, title, artist_id}
+                    // {id, title, artist, artists, artist_id, artist_ids}
                 }
                 return reply;
             });
     };
 
+    /**
+     * Search for songs given song name
+     * Returns {id, title, artist_id, album_id, url, artist, album}
+     * @param songName
+     * @return {*}
+     */
     self.songs = function (songName) {
-        return self.request(defaultPlayer, ['songs', "_", "_", "search:" + songName, "tags:seu"]).then(
+        return self.request(defaultPlayer, ['songs', "_", "_", "search:" + songName, "tags:seual"]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
-                    // {id, title, artist_id, album_id, url}
+                    // {id, title, artist_id, album_id, url, artist, album}
                 }
                 return reply;
             });
