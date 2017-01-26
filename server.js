@@ -78,7 +78,7 @@ function SqueezeServer(address, port, username, password) {
      * @param artistName
      * @return {*}
      */
-    self.artists = function (artistName) {
+    self.artistsByName = function (artistName) {
         return self.request(defaultPlayer, ['artists', "_", "_", "search:" + artistName]).then(
             function (reply) {
                 if (reply.ok) {
@@ -94,8 +94,24 @@ function SqueezeServer(address, port, username, password) {
      * @param albumName
      * @return {*}
      */
-    self.albums = function (albumName) {
+    self.albumsByName = function (albumName) {
         return self.request(defaultPlayer, ['albums', "_", "_", "search:" + albumName, "tags:tSS"]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.albums_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for albums given artist id
+     * Returns {id, title, artist_id, artist_ids}
+     * @param songName
+     * @return {*}
+     */
+    self.albumsByArtist = function (artist_id) {
+        return self.request(defaultPlayer, ['albums', "_", "_", "artist_id:" + artist_id, "tags:tSS"]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
@@ -110,8 +126,71 @@ function SqueezeServer(address, port, username, password) {
      * @param songName
      * @return {*}
      */
-    self.songs = function (songName) {
+    self.songsByName = function (songName) {
         return self.request(defaultPlayer, ['songs', "_", "_", "search:" + songName, "tags:seuSp"]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.titles_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for songs given album id
+     * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
+     * @param songName
+     * @return {*}
+     */
+    self.songsByAlbum = function (album_id) {
+        return self.request(defaultPlayer, ['songs', "_", "_", "album_id:" + album_id, "tags:seuSp"]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.titles_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for songs given artist id
+     * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
+     * @param songName
+     * @return {*}
+     */
+    self.songsByArtist = function (artist_id) {
+        return self.request(defaultPlayer, ['songs', "_", "_", "artist_id:" + artist_id, "tags:seuSp"]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.titles_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for songs given genre id
+     * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
+     * @param songName
+     * @return {*}
+     */
+    self.songsByGenre = function (genre_id) {
+        return self.request(defaultPlayer, ['songs', "_", "_", "genre_id:" + genre_id, "tags:seuSp"]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.titles_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * fetch all genres
+     * Returns {id, genre}
+     * @return {*}
+     */
+    self.genres = function () {
+        return self.request(defaultPlayer, ['genres', "_", "_"]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;

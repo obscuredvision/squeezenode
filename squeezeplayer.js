@@ -106,16 +106,25 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
             });
     };
 
-    self.play = function (item, genre, artist, album) {
+    /**
+     * Play a song, given its path (url) or
+     * a list of songs matching any combination of:
+     * genre, artist, album names (NOT ids!!!)
+     * @param url the path to the song
+     * @param genre the genre name or *
+     * @param artist the artist name or *
+     * @param album the album name or *
+     */
+    self.play = function (url, genre, artist, album) {
         var params,
             mgenre = (!genre) ? '*' : genre,
             martist = (!artist) ? '*' : artist,
             malbum = (!album) ? '*' : album;
 
-        if (!item && !genre && !artist && !album) {
+        if (!url && !genre && !artist && !album) {
             params = ['play'];
-        } else if (item) {
-            params = ['playlist', 'play', item];
+        } else if (url) {
+            params = ['playlist', 'play', url];
         } else {
             params = ['playlist', 'loadalbum', mgenre, martist, malbum]
         }
@@ -123,6 +132,10 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
         return self.request(self.playerId, params);
     };
 
+    /**
+     * Play current playlist at index
+     * @param index
+     */
     self.playIndex = function (index) {
         return self.request(self.playerId, ['playlist', 'index', index]);
     };
