@@ -75,10 +75,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for artists given artist name
      * Returns {id, artist}
      * @param artistName
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.artistsByName = function (artistName) {
-        return self.request(defaultPlayer, ['artists', '_', '_', 'search:' + artistName]).then(
+    self.artistsByName = function (artistName, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['artists', skip, take, 'search:' + artistName]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.artists_loop;
@@ -91,10 +95,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for albums given album name
      * Returns {id, title, artist_id, artist_ids}
      * @param albumName
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.albumsByName = function (albumName) {
-        return self.request(defaultPlayer, ['albums', '_', '_', 'search:' + albumName, 'tags:tSS']).then(
+    self.albumsByName = function (albumName, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['albums', skip, take, 'search:' + albumName, 'tags:tSS']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
@@ -107,10 +115,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for albums given artist id
      * Returns {id, title, artist_id, artist_ids}
      * @param artist_id
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.albumsByArtist = function (artist_id) {
-        return self.request(defaultPlayer, ['albums', '_', '_', 'artist_id:' + artist_id, 'tags:tSS']).then(
+    self.albumsByArtist = function (artist_id, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['albums', skip, take, 'artist_id:' + artist_id, 'tags:tSS']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
@@ -123,10 +135,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for playlists given playlist name
      * Returns {id, playlist, url}
      * @param playlistName
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.playlistsByName = function (playlistName) {
-        return self.request(defaultPlayer, ['playlists', 0, 100000, 'search:' + playlistName, 'tags:u']).then(
+    self.playlistsByName = function (playlistName, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : 0;
+        take = !Number.isNaN(take) && take >= 1 ? take : 100000;
+        return self.request(defaultPlayer, ['playlists', skip, take, 'search:' + playlistName, 'tags:u']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.playlists_loop;
@@ -139,10 +155,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for songs given song name
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
      * @param songName
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.songsByName = function (songName) {
-        return self.request(defaultPlayer, ['songs', '_', '_', 'search:' + songName, 'tags:seuSp']).then(
+    self.songsByName = function (songName, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['songs', skip, take, 'search:' + songName, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
@@ -155,10 +175,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for songs given album id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
      * @param album_id
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.songsByAlbum = function (album_id) {
-        return self.request(defaultPlayer, ['songs', '_', '_', 'album_id:' + album_id, 'tags:seuSp']).then(
+    self.songsByAlbum = function (album_id, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['songs', skip, take, 'album_id:' + album_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
@@ -171,10 +195,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for songs given artist id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
      * @param artist_id
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.songsByArtist = function (artist_id) {
-        return self.request(defaultPlayer, ['songs', '_', '_', 'artist_id:' + artist_id, 'tags:seuSp']).then(
+    self.songsByArtist = function (artist_id, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['songs', skip, take, 'artist_id:' + artist_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
@@ -187,10 +215,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for songs given genre id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
      * @param genre_id
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.songsByGenre = function (genre_id) {
-        return self.request(defaultPlayer, ['songs', '_', '_', 'genre_id:' + genre_id, 'tags:seuSp']).then(
+    self.songsByGenre = function (genre_id, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['songs', skip, take, 'genre_id:' + genre_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
@@ -203,10 +235,14 @@ function SqueezeServer(address, port, username, password) {
      * Search for genres given genre name
      * Returns {id, genre}
      * @param genreName
+     * @param skip
+     * @param take
      * @return {*}
      */
-    self.genresByName = function (genreName) {
-        return self.request(defaultPlayer, ['genres', '_', '_', 'search:' + genreName]).then(
+    self.genresByName = function (genreName, skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['genres', skip, take, 'search:' + genreName]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.genres_loop;
@@ -217,11 +253,15 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * fetch all genres
+     * @param skip
+     * @param take
      * Returns {id, genre}
      * @return {*}
      */
-    self.genres = function () {
-        return self.request(defaultPlayer, ['genres', '_', '_']).then(
+    self.genres = function (skip, take) {
+        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
+        take = !Number.isNaN(take) && take >= 1 ? take : '_';
+        return self.request(defaultPlayer, ['genres', skip, take]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
