@@ -29,8 +29,7 @@ var inherits = require('super'),
 
 function SqueezeServer(address, port, username, password) {
     var self = this,
-        defaultPlayer = '00:00:00:00:00:00',
-        subs = {};
+        defaultPlayer = '00:00:00:00:00:00';
 
     SqueezeServer.super_.apply(self, arguments);
 
@@ -59,11 +58,11 @@ function SqueezeServer(address, port, username, password) {
     };
 
     self.getApps = function () {
-        return self.request(defaultPlayer, ['apps', 0, 100]);
+        return self.request(defaultPlayer, ['apps', 0, 100000]);
     };
 
     self.getPlayers = function () {
-        return self.request(defaultPlayer, ['players', 0, 100]).then(
+        return self.request(defaultPlayer, ['players', 0, 100000]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.players_loop;
@@ -79,7 +78,7 @@ function SqueezeServer(address, port, username, password) {
      * @return {*}
      */
     self.artistsByName = function (artistName) {
-        return self.request(defaultPlayer, ['artists', "_", "_", "search:" + artistName]).then(
+        return self.request(defaultPlayer, ['artists', '_', '_', 'search:' + artistName]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.artists_loop;
@@ -95,7 +94,7 @@ function SqueezeServer(address, port, username, password) {
      * @return {*}
      */
     self.albumsByName = function (albumName) {
-        return self.request(defaultPlayer, ['albums', "_", "_", "search:" + albumName, "tags:tSS"]).then(
+        return self.request(defaultPlayer, ['albums', '_', '_', 'search:' + albumName, 'tags:tSS']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
@@ -107,14 +106,30 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for albums given artist id
      * Returns {id, title, artist_id, artist_ids}
-     * @param songName
+     * @param artist_id
      * @return {*}
      */
     self.albumsByArtist = function (artist_id) {
-        return self.request(defaultPlayer, ['albums', "_", "_", "artist_id:" + artist_id, "tags:tSS"]).then(
+        return self.request(defaultPlayer, ['albums', '_', '_', 'artist_id:' + artist_id, 'tags:tSS']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for playlists given playlist name
+     * Returns {id, playlist, url}
+     * @param playlistName
+     * @return {*}
+     */
+    self.playlistsByName = function (playlistName) {
+        return self.request(defaultPlayer, ['playlists', 0, 100000, 'search:' + playlistName, 'tags:u']).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.playlists_loop;
                 }
                 return reply;
             });
@@ -127,7 +142,7 @@ function SqueezeServer(address, port, username, password) {
      * @return {*}
      */
     self.songsByName = function (songName) {
-        return self.request(defaultPlayer, ['songs', "_", "_", "search:" + songName, "tags:seuSp"]).then(
+        return self.request(defaultPlayer, ['songs', '_', '_', 'search:' + songName, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
@@ -139,11 +154,11 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for songs given album id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param songName
+     * @param album_id
      * @return {*}
      */
     self.songsByAlbum = function (album_id) {
-        return self.request(defaultPlayer, ['songs', "_", "_", "album_id:" + album_id, "tags:seuSp"]).then(
+        return self.request(defaultPlayer, ['songs', '_', '_', 'album_id:' + album_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
@@ -155,11 +170,11 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for songs given artist id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param songName
+     * @param artist_id
      * @return {*}
      */
     self.songsByArtist = function (artist_id) {
-        return self.request(defaultPlayer, ['songs', "_", "_", "artist_id:" + artist_id, "tags:seuSp"]).then(
+        return self.request(defaultPlayer, ['songs', '_', '_', 'artist_id:' + artist_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
@@ -171,14 +186,30 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for songs given genre id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param songName
+     * @param genre_id
      * @return {*}
      */
     self.songsByGenre = function (genre_id) {
-        return self.request(defaultPlayer, ['songs', "_", "_", "genre_id:" + genre_id, "tags:seuSp"]).then(
+        return self.request(defaultPlayer, ['songs', '_', '_', 'genre_id:' + genre_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for genres given genre name
+     * Returns {id, genre}
+     * @param genreName
+     * @return {*}
+     */
+    self.genresByName = function (genreName) {
+        return self.request(defaultPlayer, ['genres', '_', '_', 'search:' + genreName]).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.genres_loop;
                 }
                 return reply;
             });
@@ -190,7 +221,7 @@ function SqueezeServer(address, port, username, password) {
      * @return {*}
      */
     self.genres = function () {
-        return self.request(defaultPlayer, ['genres', "_", "_"]).then(
+        return self.request(defaultPlayer, ['genres', '_', '_']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
