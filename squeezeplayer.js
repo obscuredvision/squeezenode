@@ -110,10 +110,10 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
      * Play a song, given its path (url) or
      * a list of songs matching any combination of:
      * genre, artist, album names (NOT ids!!!)
-     * @param url the path to the song
-     * @param genre the genre name or *
-     * @param artist the artist name or *
-     * @param album the album name or *
+     * @param url String path to the song
+     * @param genre String genre name or *
+     * @param artist String artist name or *
+     * @param album String album name or *
      */
     self.play = function (url, genre, artist, album) {
         var params,
@@ -134,10 +134,18 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
 
     /**
      * Play current playlist at index
-     * @param index
+     * @param index Number
      */
     self.playIndex = function (index) {
         return self.request(self.playerId, ['playlist', 'index', index]);
+    };
+
+    /**
+     * Play the playlist by playlist id
+     * @param playlistId Number the playlist id
+     */
+    self.playPlaylist = function (playlistId) {
+        return self.request(self.playerId, ['playlistcontrol', 'cmd:load', 'playlist_id:' + playlistId]);
     };
 
     self.pause = function (pause) {
@@ -174,10 +182,16 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
         return self.request(self.playerId, ['playlist', 'insert', item]);
     };
 
+    /**
+     * Appends all songs matching the specified criteria onto the end of the playlist
+     * @param genre String genre name
+     * @param artist String artist name
+     * @param album String album name
+     */
     self.playlistAddAlbum = function (genre, artist, album) {
         var mgenre = (!genre) ? '*' : genre,
             martist = (!artist) ? '*' : artist,
-            malbum = (!album) ? '*' : album
+            malbum = (!album) ? '*' : album;
         return self.request(self.playerId, ['playlist', 'addalbum', mgenre, martist, malbum]);
     };
 
