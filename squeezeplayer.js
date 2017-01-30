@@ -133,19 +133,19 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
     };
 
     /**
-     * Play current playlist at index
-     * @param index Number
-     */
-    self.playIndex = function (index) {
-        return self.request(self.playerId, ['playlist', 'index', index]);
-    };
-
-    /**
      * Play the playlist by playlist id
      * @param playlistId Number the playlist id
      */
     self.playPlaylist = function (playlistId) {
         return self.request(self.playerId, ['playlistcontrol', 'cmd:load', 'playlist_id:' + playlistId]);
+    };
+
+    /**
+     * Play current playlist at index
+     * @param index Number
+     */
+    self.playIndex = function (index) {
+        return self.request(self.playerId, ['playlist', 'index', index]);
     };
 
     self.pause = function (pause) {

@@ -74,15 +74,19 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for artists given artist name
      * Returns {id, artist}
-     * @param artistName
-     * @param skip
-     * @param take
+     * @param artistName String search criteria or all artists if null
+     * @param skip Number start at
+     * @param take Number take this many
      * @return {*}
      */
-    self.artistsByName = function (artistName, skip, take) {
-        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
-        take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['artists', skip, take, 'search:' + artistName]).then(
+    self.artists = function (artistName, skip, take) {
+        var s = !Number.isNaN(skip) && skip >= 0 ? skip : '_',
+            t = !Number.isNaN(take) && take >= 1 ? take : '_',
+            params = ['artists', s, t];
+        if (!!artistName) {
+            params.push('search:' + artistName);
+        }
+        return self.request(defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.artists_loop;
@@ -94,18 +98,94 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for albums given album name
      * Returns {id, title, artist_id, artist_ids}
-     * @param albumName
-     * @param skip
-     * @param take
+     * @param albumName String search criteria or all albums if null
+     * @param skip Number start at
+     * @param take Number take this many
      * @return {*}
      */
-    self.albumsByName = function (albumName, skip, take) {
-        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
-        take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['albums', skip, take, 'search:' + albumName, 'tags:tSS']).then(
+    self.albums = function (albumName, skip, take) {
+        var s = !Number.isNaN(skip) && skip >= 0 ? skip : '_',
+            t = !Number.isNaN(take) && take >= 1 ? take : '_',
+            params = ['albums', s, t, 'tags:tSS'];
+        if (!!albumName) {
+            params.push('search:' + albumName);
+        }
+        return self.request(defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for songs given song name
+     * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
+     * @param songName String search criteria or all songs if null
+     * @param skip Number start at
+     * @param take Number take this many
+     * @return {*}
+     */
+    self.songs = function (songName, skip, take) {
+        var s = !Number.isNaN(skip) && skip >= 0 ? skip : '_',
+            t = !Number.isNaN(take) && take >= 1 ? take : '_',
+            params = ['albums', s, t, 'tags:seuSp'];
+        if (!!songName) {
+            params.push('search:' + songName);
+        }
+        return self.request(defaultPlayer, params).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.titles_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for genres given genre name
+     * Returns {id, genre}
+     * @param genreName String search criteria or all genres if null
+     * @param skip Number start at
+     * @param take Number take this many
+     * @return {*}
+     */
+    self.genres = function (genreName, skip, take) {
+        var s = !Number.isNaN(skip) && skip >= 0 ? skip : '_',
+            t = !Number.isNaN(take) && take >= 1 ? take : '_',
+            params = ['genres', s, t];
+        if (!!genreName) {
+            params.push('search:' + genreName);
+        }
+        return self.request(defaultPlayer, params).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.genres_loop;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Search for playlists given playlist name
+     * Returns {id, playlist, url}
+     * @param playlistName String search criteria or all playlists if null
+     * @param skip Number start at
+     * @param take Number take this many
+     * @return {*}
+     */
+    self.playlists = function (playlistName, skip, take) {
+        var s = !Number.isNaN(skip) && skip >= 0 ? skip : 0,
+            t = !Number.isNaN(take) && take >= 1 ? take : 100000,
+            params = ['playlists', s, t, 'tags:u'];
+        if (!!playlistName) {
+            params.push('search:' + playlistName);
+        }
+        return self.request(defaultPlayer, params).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result.playlists_loop;
                 }
                 return reply;
             });
@@ -126,46 +206,6 @@ function SqueezeServer(address, port, username, password) {
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.albums_loop;
-                }
-                return reply;
-            });
-    };
-
-    /**
-     * Search for playlists given playlist name
-     * Returns {id, playlist, url}
-     * @param playlistName
-     * @param skip
-     * @param take
-     * @return {*}
-     */
-    self.playlistsByName = function (playlistName, skip, take) {
-        skip = !Number.isNaN(skip) && skip >= 0 ? skip : 0;
-        take = !Number.isNaN(take) && take >= 1 ? take : 100000;
-        return self.request(defaultPlayer, ['playlists', skip, take, 'search:' + playlistName, 'tags:u']).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result.playlists_loop;
-                }
-                return reply;
-            });
-    };
-
-    /**
-     * Search for songs given song name
-     * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param songName
-     * @param skip
-     * @param take
-     * @return {*}
-     */
-    self.songsByName = function (songName, skip, take) {
-        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
-        take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['songs', skip, take, 'search:' + songName, 'tags:seuSp']).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result.titles_loop;
                 }
                 return reply;
             });
@@ -223,45 +263,6 @@ function SqueezeServer(address, port, username, password) {
         skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
         take = !Number.isNaN(take) && take >= 1 ? take : '_';
         return self.request(defaultPlayer, ['songs', skip, take, 'genre_id:' + genre_id, 'tags:seuSp']).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result.titles_loop;
-                }
-                return reply;
-            });
-    };
-
-    /**
-     * Search for genres given genre name
-     * Returns {id, genre}
-     * @param genreName
-     * @param skip
-     * @param take
-     * @return {*}
-     */
-    self.genresByName = function (genreName, skip, take) {
-        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
-        take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['genres', skip, take, 'search:' + genreName]).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result.genres_loop;
-                }
-                return reply;
-            });
-    };
-
-    /**
-     * fetch all genres
-     * @param skip
-     * @param take
-     * Returns {id, genre}
-     * @return {*}
-     */
-    self.genres = function (skip, take) {
-        skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
-        take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['genres', skip, take]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result.titles_loop;
