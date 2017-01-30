@@ -24,6 +24,7 @@
 
 var inherits = require('super'),
     fs = require('fs'),
+    Promise = require('bluebird'),
     SqueezeRequest = require('./squeezerequest'),
     SqueezePlayer = require('./squeezeplayer');
 
@@ -65,9 +66,26 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, ['players', 0, 100000]).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.players_loop;
                 }
                 return reply;
+            });
+    };
+    
+    self.totals = function () {
+        return Promise.all([
+            self.request(defaultPlayer, ['info', 'total', 'artists', '?']),
+            self.request(defaultPlayer, ['info', 'total', 'albums', '?']),
+            self.request(defaultPlayer, ['info', 'total', 'songs', '?']),
+            self.request(defaultPlayer, ['info', 'total', 'genres', '?'])])
+            .spread(function (artists, albums, songs, genres) {
+                var response = {};
+                response.artists = (artists.ok) ? artists.result._artists : 0;
+                response.albums = (albums.ok) ? albums.result._albums : 0;
+                response.songs = (songs.ok) ? songs.result._songs : 0;
+                response.genres = (genres.ok) ? genres.result._genres : 0;
+                return response;
             });
     };
 
@@ -89,6 +107,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.artists_loop;
                 }
                 return reply;
@@ -113,6 +132,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.albums_loop;
                 }
                 return reply;
@@ -137,6 +157,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.titles_loop;
                 }
                 return reply;
@@ -161,6 +182,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.genres_loop;
                 }
                 return reply;
@@ -185,6 +207,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.playlists_loop;
                 }
                 return reply;
@@ -205,6 +228,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, ['albums', skip, take, 'artist_id:' + artist_id, 'tags:tSS']).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.albums_loop;
                 }
                 return reply;
@@ -225,6 +249,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, ['songs', skip, take, 'album_id:' + album_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.titles_loop;
                 }
                 return reply;
@@ -245,6 +270,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, ['songs', skip, take, 'artist_id:' + artist_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.titles_loop;
                 }
                 return reply;
@@ -265,6 +291,7 @@ function SqueezeServer(address, port, username, password) {
         return self.request(defaultPlayer, ['songs', skip, take, 'genre_id:' + genre_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
+                    reply.count = reply.result.count;
                     reply.result = reply.result.titles_loop;
                 }
                 return reply;
