@@ -150,7 +150,7 @@ function SqueezeServer(address, port, username, password) {
     self.songs = function (songName, skip, take) {
         var s = !Number.isNaN(skip) && skip >= 0 ? skip : '_',
             t = !Number.isNaN(take) && take >= 1 ? take : '_',
-            params = ['albums', s, t, 'tags:seuSp'];
+            params = ['songs', s, t, 'tags:seuSp'];
         if (!!songName) {
             params.push('search:' + songName);
         }
