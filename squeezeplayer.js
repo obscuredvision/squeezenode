@@ -23,6 +23,7 @@
  */
 
 var inherits = require('super'),
+    Promise = require('bluebird'),
     SqueezeRequest = require('./squeezerequest');
 
 function SqueezePlayer(playerId, name, address, port, username, password) {
@@ -75,6 +76,31 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
                     reply.result = reply.result._album;
                 }
                 return reply;
+            });
+    };
+
+    self.getPath = function () {
+        return self.request(self.playerId, ['path', '?']).then(
+            function (reply) {
+                if (reply.ok) {
+                    reply.result = reply.result._path;
+                }
+                return reply;
+            });
+    };
+
+    /**
+     * Get Currently playing song information
+     */
+    self.getCurrentlyPlaying = function () {
+        return self.getPath().then(
+            function (response) {
+                return self.songInfo(response.result).then(
+                    function (reply) {
+                        if (reply.ok && reply.coverid) {
+                            reply.result.coverurl = '/music/' + reply.coverid + '/cover.jpg'
+                        }
+                    });
             });
     };
 
