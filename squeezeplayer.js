@@ -97,7 +97,7 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
             params.push('track_id:' + trackIdOrUrl);
         }
 
-        return self.request(defaultPlayer, params).then(
+        return self.request(self.defaultPlayer, params).then(
             function (reply) {
                 var arr, keys, songInfo = {};
                 if (reply.ok) {

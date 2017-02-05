@@ -38,31 +38,31 @@ function SqueezeServer(address, port, username, password) {
     self.playerUpdateInterval = 2000;
 
     self.getPlayerCount = function () {
-        return self.request(defaultPlayer, ['player', 'count', '?']);
+        return self.request(self.defaultPlayer, ['player', 'count', '?']);
     };
 
     self.getPlayerId = function (id) {
-        return self.request(defaultPlayer, ['player', 'id', id, '?']);
+        return self.request(self.defaultPlayer, ['player', 'id', id, '?']);
     };
 
     self.getPlayerIp = function (playerId) {
-        return self.request(defaultPlayer, ['player', 'ip', playerId, '?']);
+        return self.request(self.defaultPlayer, ['player', 'ip', playerId, '?']);
     };
 
     self.getPlayerName = function (playerId) {
-        return self.request(defaultPlayer, ['player', 'name', playerId, '?']);
+        return self.request(self.defaultPlayer, ['player', 'name', playerId, '?']);
     };
 
     self.getSyncGroups = function () {
-        return self.request(defaultPlayer, ['syncgroups', '?']);
+        return self.request(self.defaultPlayer, ['syncgroups', '?']);
     };
 
     self.getApps = function () {
-        return self.request(defaultPlayer, ['apps', 0, 100000]);
+        return self.request(self.defaultPlayer, ['apps', 0, 100000]);
     };
 
     self.getPlayers = function () {
-        return self.request(defaultPlayer, ['players', 0, 100000]).then(
+        return self.request(self.defaultPlayer, ['players', 0, 100000]).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -74,10 +74,10 @@ function SqueezeServer(address, port, username, password) {
 
     self.totals = function () {
         return Promise.all([
-            self.request(defaultPlayer, ['info', 'total', 'artists', '?']),
-            self.request(defaultPlayer, ['info', 'total', 'albums', '?']),
-            self.request(defaultPlayer, ['info', 'total', 'songs', '?']),
-            self.request(defaultPlayer, ['info', 'total', 'genres', '?'])])
+            self.request(self.defaultPlayer, ['info', 'total', 'artists', '?']),
+            self.request(self.defaultPlayer, ['info', 'total', 'albums', '?']),
+            self.request(self.defaultPlayer, ['info', 'total', 'songs', '?']),
+            self.request(self.defaultPlayer, ['info', 'total', 'genres', '?'])])
             .spread(function (artists, albums, songs, genres) {
                 var response = {};
                 response.artists = (artists.ok) ? artists.result._artists : 0;
@@ -103,7 +103,7 @@ function SqueezeServer(address, port, username, password) {
         if (!!artistName) {
             params.push('search:' + artistName);
         }
-        return self.request(defaultPlayer, params).then(
+        return self.request(self.defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -128,7 +128,7 @@ function SqueezeServer(address, port, username, password) {
         if (!!albumName) {
             params.push('search:' + albumName);
         }
-        return self.request(defaultPlayer, params).then(
+        return self.request(self.defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -153,7 +153,7 @@ function SqueezeServer(address, port, username, password) {
         if (!!songName) {
             params.push('search:' + songName);
         }
-        return self.request(defaultPlayer, params).then(
+        return self.request(self.defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -178,7 +178,7 @@ function SqueezeServer(address, port, username, password) {
         if (!!genreName) {
             params.push('search:' + genreName);
         }
-        return self.request(defaultPlayer, params).then(
+        return self.request(self.defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -203,7 +203,7 @@ function SqueezeServer(address, port, username, password) {
         if (!!playlistName) {
             params.push('search:' + playlistName);
         }
-        return self.request(defaultPlayer, params).then(
+        return self.request(self.defaultPlayer, params).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -224,7 +224,7 @@ function SqueezeServer(address, port, username, password) {
     self.albumsByArtist = function (artist_id, skip, take) {
         skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
         take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['albums', skip, take, 'artist_id:' + artist_id, 'tags:tSS']).then(
+        return self.request(self.defaultPlayer, ['albums', skip, take, 'artist_id:' + artist_id, 'tags:tSS']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -245,7 +245,7 @@ function SqueezeServer(address, port, username, password) {
     self.songsByAlbum = function (album_id, skip, take) {
         skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
         take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['songs', skip, take, 'album_id:' + album_id, 'tags:seuSp']).then(
+        return self.request(self.defaultPlayer, ['songs', skip, take, 'album_id:' + album_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -266,7 +266,7 @@ function SqueezeServer(address, port, username, password) {
     self.songsByArtist = function (artist_id, skip, take) {
         skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
         take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['songs', skip, take, 'artist_id:' + artist_id, 'tags:seuSp']).then(
+        return self.request(self.defaultPlayer, ['songs', skip, take, 'artist_id:' + artist_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -287,7 +287,7 @@ function SqueezeServer(address, port, username, password) {
     self.songsByGenre = function (genre_id, skip, take) {
         skip = !Number.isNaN(skip) && skip >= 0 ? skip : '_';
         take = !Number.isNaN(take) && take >= 1 ? take : '_';
-        return self.request(defaultPlayer, ['songs', skip, take, 'genre_id:' + genre_id, 'tags:seuSp']).then(
+        return self.request(self.defaultPlayer, ['songs', skip, take, 'genre_id:' + genre_id, 'tags:seuSp']).then(
             function (reply) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
@@ -329,7 +329,7 @@ function SqueezeServer(address, port, username, password) {
                                     apps.forEach(function (player) {
                                         if (fil === player.cmd) {
                                             app = require(dir + file);
-                                            self.apps[player.cmd] = new app(defaultPlayer, player.name, player.cmd,
+                                            self.apps[player.cmd] = new app(self.defaultPlayer, player.name, player.cmd,
                                                 self.address, self.port, self.username, self.password);
                                             /* workaround, app needs existing player id so first is used here */
                                         }
