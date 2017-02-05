@@ -122,9 +122,10 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
             function (response) {
                 return self.songInfo(response.result).then(
                     function (reply) {
-                        if (reply.ok && reply.coverid) {
-                            reply.result.coverurl = '/music/' + reply.coverid + '/cover.jpg'
+                        if (reply.ok && reply.result.coverid) {
+                            reply.result.coverurl = '/music/' + reply.result.coverid + '/cover.jpg'
                         }
+                        return reply;
                     });
             });
     };
