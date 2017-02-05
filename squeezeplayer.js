@@ -23,7 +23,6 @@
  */
 
 var inherits = require('super'),
-    Promise = require('bluebird'),
     SqueezeRequest = require('./squeezerequest');
 
 function SqueezePlayer(playerId, name, address, port, username, password) {
@@ -84,6 +83,32 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
             function (reply) {
                 if (reply.ok) {
                     reply.result = reply.result._path;
+                }
+                return reply;
+            });
+    };
+
+    self.songInfo = function (trackIdOrUrl) {
+        var params = ['songinfo', 0, 100, 'tags:algc'];
+
+        if (trackIdOrUrl.indexOf('file://') != -1) {
+            params.push('url:' + trackIdOrUrl);
+        } else {
+            params.push('track_id:' + trackIdOrUrl);
+        }
+
+        return self.request(defaultPlayer, params).then(
+            function (reply) {
+                var arr, keys, songInfo = {};
+                if (reply.ok) {
+                    arr = reply.result.songinfo_loop;
+                    arr.forEach(function (o) {
+                        keys = Object.keys(o);
+                        keys.forEach(function (key) {
+                            songInfo[key] = o[key];
+                        });
+                    });
+                    reply.result = songInfo;
                 }
                 return reply;
             });

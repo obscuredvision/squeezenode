@@ -33,6 +33,7 @@ function SqueezeRequest(address, port, username, password) {
     self.port = (port !== undefined) ? port : 9000;
     self.username = username;
     self.password = password;
+    self.defaultPlayer = '00:00:00:00:00:00';
 
     jsonrpc = self.address + ':' + self.port + '/jsonrpc.js';
     client = jayson.client.http(jsonrpc);

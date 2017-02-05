@@ -29,8 +29,7 @@ var inherits = require('super'),
     SqueezePlayer = require('./squeezeplayer');
 
 function SqueezeServer(address, port, username, password) {
-    var self = this,
-        defaultPlayer = '00:00:00:00:00:00';
+    var self = this;
 
     SqueezeServer.super_.apply(self, arguments);
 
@@ -293,32 +292,6 @@ function SqueezeServer(address, port, username, password) {
                 if (reply.ok) {
                     reply.count = reply.result.count;
                     reply.result = reply.result.titles_loop;
-                }
-                return reply;
-            });
-    };
-
-    self.songInfo = function (trackIdOrUrl) {
-        var params = ['songinfo', 0, 100, 'tags:algc'];
-
-        if (trackIdOrUrl.indexOf('file://') != -1) {
-            params.push('url:' + trackIdOrUrl);
-        } else {
-            params.push('track_id:' + trackIdOrUrl);
-        }
-
-        return self.request(defaultPlayer, params).then(
-            function (reply) {
-                var arr, keys, songInfo = {};
-                if (reply.ok) {
-                    arr = reply.result.songinfo_loop;
-                    arr.forEach(function (o) {
-                        keys = Object.keys(o);
-                        keys.forEach(function (key) {
-                            songInfo[key] = o[key];
-                        });
-                    });
-                    reply.result = songInfo;
                 }
                 return reply;
             });
