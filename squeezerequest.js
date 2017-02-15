@@ -55,23 +55,18 @@ function SqueezeRequest(address, port, username, password) {
     }
 
     self.request = function (player, params) {
-        return new Promise(function (resolve, reject) {
-            var finalParams = [];
-            finalParams.push(player);
-            finalParams.push(params);
-            client.request('slim.request', finalParams, null, function (error, reply) {
-                var result = {};
-                if (error) {
-                    result = error;
-                    result.ok = false;
-                    reject(result);
-                } else {
-                    result = reply;
-                    result.ok = true;
-                    resolve(result);
-                }
-            });
+        var finalParams = [],
+            call = Promise.promisify(client.request, { context: client });
 
+        finalParams.push(player);
+        finalParams.push(params);
+
+        return call('slim.request', finalParams).then(function (reply) {
+            reply.ok = true;
+            return reply;
+        }).catch(function (error) {
+            error.ok = false;
+            return error;
         });
     };
 }

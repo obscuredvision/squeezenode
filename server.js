@@ -79,7 +79,7 @@ function SqueezeServer(address, port, username, password) {
             self.request(self.defaultPlayer, ['info', 'total', 'songs', '?']),
             self.request(self.defaultPlayer, ['info', 'total', 'genres', '?'])])
             .spread(function (artists, albums, songs, genres) {
-                var response = {};
+                var response = { ok: artists.ok };
                 response.artists = (artists.ok) ? artists.result._artists : 0;
                 response.albums = (albums.ok) ? albums.result._albums : 0;
                 response.songs = (songs.ok) ? songs.result._songs : 0;
