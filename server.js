@@ -91,9 +91,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for artists given artist name
      * Returns {id, artist}
-     * @param artistName String search criteria or all artists if null
-     * @param skip Number start at
-     * @param take Number take this many
+     * @param artistName {string} search criteria or all artists if null
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.artists = function (artistName, skip, take) {
@@ -116,9 +116,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for albums given album name
      * Returns {id, title, artist_id, artist_ids}
-     * @param albumName String search criteria or all albums if null
-     * @param skip Number start at
-     * @param take Number take this many
+     * @param albumName {string} search criteria or all albums if null
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.albums = function (albumName, skip, take) {
@@ -141,9 +141,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for songs given song name
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param songName String search criteria or all songs if null
-     * @param skip Number start at
-     * @param take Number take this many
+     * @param songName {string} search criteria or all songs if null
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.songs = function (songName, skip, take) {
@@ -166,9 +166,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for genres given genre name
      * Returns {id, genre}
-     * @param genreName String search criteria or all genres if null
-     * @param skip Number start at
-     * @param take Number take this many
+     * @param genreName {string} search criteria or all genres if null
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.genres = function (genreName, skip, take) {
@@ -191,9 +191,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for playlists given playlist name
      * Returns {id, playlist, url}
-     * @param playlistName String search criteria or all playlists if null
-     * @param skip Number start at
-     * @param take Number take this many
+     * @param playlistName {string} search criteria or all playlists if null
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.playlists = function (playlistName, skip, take) {
@@ -216,9 +216,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for albums given artist id
      * Returns {id, title, artist_id, artist_ids}
-     * @param artist_id
-     * @param skip
-     * @param take
+     * @param artist_id {Number} only albums by this artist
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.albumsByArtist = function (artist_id, skip, take) {
@@ -237,9 +237,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for songs given album id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param album_id
-     * @param skip
-     * @param take
+     * @param album_id {Number} only songs on album
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.songsByAlbum = function (album_id, skip, take) {
@@ -258,9 +258,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for songs given artist id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param artist_id
-     * @param skip
-     * @param take
+     * @param artist_id {Number} only songs by artist
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.songsByArtist = function (artist_id, skip, take) {
@@ -279,9 +279,9 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for songs given genre id
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param genre_id
-     * @param skip
-     * @param take
+     * @param genre_id {Number} only songs in genre
+     * @param skip {Number} start at
+     * @param take {Number} take this many
      * @return {*}
      */
     self.songsByGenre = function (genre_id, skip, take) {
@@ -298,54 +298,58 @@ function SqueezeServer(address, port, username, password) {
     };
 
     self.register = function () {
-        return new Promise(function (resolve, reject) {
-            self.getPlayers().then(function (reply) {
-                var players = reply.result;
+        // clear players and apps before filling
+        self.players = {};
+        self.apps = {};
 
-                // clear players and apps before filling
-                self.players = {};
-                self.apps = {};
+        function setPlayers(reply) {
+            var players = reply.result;
+            // set players
+            if (reply.ok) {
+                players.forEach(function (player) {
+                    if (!self.players[player.playerid]) {
+                        // player not on the list, add it
+                        self.players[player.playerid] = new SqueezePlayer(player.playerid,
+                            player.name, self.address, self.port, self.username, self.password);
+                    }
+                });
+            } else {
+                throw new Error(reply);
+            }
+        }
 
-                // set players
-                if (reply.ok) {
-                    players.forEach(function (player) {
-                        if (!self.players[player.playerid]) {
-                            // player not on the list, add it
-                            self.players[player.playerid] = new SqueezePlayer(player.playerid,
-                                player.name, self.address, self.port, self.username, self.password);
-                        }
+        function setApps(reply) {
+            // set apps
+            if (reply.ok) {
+                var apps = reply.result.appss_loop,
+                    dir = __dirname + '/';
+                fs.readdir(dir, function (err, files) {
+                    files.forEach(function (file) {
+                        var app,
+                            fil = file.substr(0, file.lastIndexOf('.'));
+
+                        apps.forEach(function (player) {
+                            if (fil === player.cmd) {
+                                app = require(dir + file);
+                                self.apps[player.cmd] = new app(self.defaultPlayer, player.name, player.cmd,
+                                    self.address, self.port, self.username, self.password);
+                                /* workaround, app needs existing player id so first is used here */
+                            }
+                        });
                     });
+                });
+            } else {
+                throw new Error(reply);
+            }
+        }
 
-                    self.getApps().then(function (reply) {
-                        // set apps
-                        if (reply.ok) {
-                            var apps = reply.result.appss_loop,
-                                dir = __dirname + '/';
-                            fs.readdir(dir, function (err, files) {
-                                files.forEach(function (file) {
-                                    var app,
-                                        fil = file.substr(0, file.lastIndexOf('.'));
-
-                                    apps.forEach(function (player) {
-                                        if (fil === player.cmd) {
-                                            app = require(dir + file);
-                                            self.apps[player.cmd] = new app(self.defaultPlayer, player.name, player.cmd,
-                                                self.address, self.port, self.username, self.password);
-                                            /* workaround, app needs existing player id so first is used here */
-                                        }
-                                    });
-                                });
-                                resolve();
-                            });
-                        } else {
-                            reject(reply);
-                        }
-                    });
-                } else {
-                    reject(reply);
-                }
+        return Promise.all([
+            self.getPlayers(),
+            self.getApps()])
+            .spread(function (players, apps) {
+                setPlayers(players);
+                setApps(apps);
             });
-        });
     };
 }
 

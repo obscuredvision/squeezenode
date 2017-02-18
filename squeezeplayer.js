@@ -88,6 +88,13 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
             });
     };
 
+    /**
+     * Get song info by track id or path to file
+     * @param trackIdOrUrl {string|Number} the song to get information for
+     * if trackId then it should be a number to a specific track
+     * if Url it should be a path with the file:// protocol
+     * @return {*} song information
+     */
     self.songInfo = function (trackIdOrUrl) {
         var params = ['songinfo', 0, 100, 'tags:algc'];
 
@@ -116,6 +123,7 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
 
     /**
      * Get Currently playing song information
+     * @return {*} song information with cover url if any
      */
     self.getCurrentlyPlaying = function () {
         return self.getPath().then(
