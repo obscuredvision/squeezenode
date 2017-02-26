@@ -130,11 +130,15 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
             function (response) {
                 return self.songInfo(response.result).then(
                     function (reply) {
-                        var coverid = 'unknown';
-                        if (reply.ok && reply.result && reply.result.coverid) {
-                            coverid = reply.result.coverid;
+                        if (reply.ok) {
+                            if (!reply.result) {
+                                reply.result = {};
+                            }
+                            if (!reply.result.coverid) {
+                                reply.result.coverid = 'unknown';
+                            }
+                            reply.result.coverurl = '/music/' + reply.result.coverid + '/cover.jpg';
                         }
-                        reply.result.coverurl = '/music/' + coverid + '/cover.jpg';
                         return reply;
                     });
             });
