@@ -228,10 +228,6 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
         return self.request(self.playerId, ['stop']);
     };
 
-    self.next = function () {
-        return self.request(self.playerId, ['button', 'jump_rew']);
-    };
-
     self.previous = function () {
         return self.request(self.playerId, ['button', 'jump_rew']);
     };
