@@ -1,28 +1,5 @@
-/*
- The MIT License (MIT)
-
- Copyright (c) 2013-2015 Piotr Raczynski, pio[dot]raczynski[at]gmail[dot]com
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the 'Software'), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
- */
-
 var inherits = require('super'),
+    _ = require('lodash'),
     SqueezeRequest = require('./squeezerequest');
 
 function SqueezePlayer(playerId, name, address, port, username, password) {
@@ -32,275 +9,683 @@ function SqueezePlayer(playerId, name, address, port, username, password) {
 
     SqueezePlayer.super_.apply(self, [address, port, username, password]);
 
-    self.clearPlayList = function () {
-        return self.request(self.playerId, ['playlist', 'clear']);
-    };
-
-    self.getMode = function () {
-        return self.request(self.playerId, ['mode', '?']);
-    };
-
-    self.setName = function (name) {
-        return self.request(self.playerId, ['name', name]);
-    };
-
-    self.getName = function () {
-        return self.request(self.playerId, ['name', '?']);
-    };
-
-    self.getCurrentTitle = function () {
-        return self.request(self.playerId, ['current_title', '?']).then(
+    /**
+     * complete status about a given player, including the current playlist
+     */
+    self.status = function () {
+        return self.request(self.playerId, ['status', '-', 1, 'tags:aAsSelgGpPcdtyuJ']).then(
             function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result._current_title;
+                var response = {};
+                if (reply && reply.result) {
+                    _.assign(response, reply.result);
                 }
-                return reply;
+                return response;
             });
     };
 
-    self.getArtist = function () {
-        return self.request(self.playerId, ['artist', '?']).then(
+    /**
+     * seek to a position within a track
+     * @param seconds {Number} the pos/neg number to seek to
+     * @return {Promise.<*>}
+     */
+    self.seek = function (seconds) {
+        var time = _.isNil(seconds) || !_.isFinite(seconds) ? '?' : seconds.toString();
+        return self.request(self.playerId, ['time', time]).then(
             function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result._artist;
+                var response = {};
+                if (reply && reply.result) {
+                    if (time === '?') {
+                        response.time = reply.result._time;
+                    }
                 }
-                return reply;
+
+                return response;
             });
     };
 
-    self.getAlbum = function () {
-        return self.request(self.playerId, ['album', '?']).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result._album;
-                }
-                return reply;
-            });
-    };
-
-    self.getPath = function () {
+    /**
+     * get the url (path) of the current song
+     * @return {Promise.<*>}
+     */
+    self.path = function () {
         return self.request(self.playerId, ['path', '?']).then(
             function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result._path;
+                var response = {};
+                if (reply && reply.result) {
+                    response.path = reply.result._path;
                 }
-                return reply;
+                return response;
             });
     };
 
     /**
-     * Get song info by track id or path to file
-     * @param trackIdOrUrl {string|Number} the song to get information for
-     * if trackId then it should be a number to a specific track
-     * if Url it should be a path with the file:// protocol
-     * @return {*} song information
+     * set the player mode
+     * @param mode {String} player mode see: constants.PlayerMode
+     * @param state {Number} 0/1
+     * @return {*}
      */
-    self.songInfo = function (trackIdOrUrl) {
-        var params = ['songinfo', 0, 100, 'tags:algc'];
+    self.mode = function (mode, state) {
+        return Promise.try(function () {
+            var params = self.playerModeToParams(mode);
+            if (util.isNullOrEmpty(params) || util.isNullOrEmpty(state) || util.isNaN(state)) {
+                throw new TypeError('mode or state', 'lmsplayer.js');
+            }
+            params.push((state >= 1) ? 1 : 0);
+            return self.request(self.playerId, params);
+        });
+    };
 
-        if (trackIdOrUrl.indexOf('file://') != -1) {
-            params.push('url:' + trackIdOrUrl);
-        } else {
-            params.push('track_id:' + trackIdOrUrl);
-        }
+    /**
+     * (un)Pause the player
+     * @param pause {Number} 0/1
+     */
+    self.pause = function (pause) {
+        return Promise.try(function () {
+            if (!_.isFinite(pause)) {
+                throw new TypeError('pause', 'lmsplayer.js');
+            }
+            pause = (pause >= 1 || !!pause) ? 1 : 0;
+            return self.request(self.playerId, ['pause', pause]);
+        });
+    };
 
-        return self.request(self.defaultPlayer, params).then(
+    /**
+     * (un)mute the player
+     * @param mute {Number} 0/1
+     * @return {Promise.<*>}
+     */
+    self.mute = function (mute) {
+        var muting = _.isNil(mute) || !_.isFinite(mute) ? '?' : mute.toString();
+        return self.request(self.playerId, ['mixer', 'muting', muting]).then(
             function (reply) {
-                var arr, keys, songInfo = {};
-                if (reply.ok) {
-                    arr = reply.result.songinfo_loop;
-                    arr.forEach(function (o) {
-                        keys = Object.keys(o);
-                        keys.forEach(function (key) {
-                            songInfo[key] = o[key];
-                        });
-                    });
-                    reply.result = songInfo;
+                var response = {};
+                if (reply && reply.result) {
+                    if (muting === '?') {
+                        response.mute = reply.result._muting;
+                    }
                 }
-                return reply;
+                return response;
             });
     };
 
     /**
-     * Get Currently playing song information
+     * stop the player
+     */
+    self.stop = function () {
+        return self.request(self.playerId, ['stop']);
+    };
+
+    /**
+     * power on/off the player or report state
+     * @param state {Number} 0/1
+     * @return {Promise.<*>}
+     */
+    self.power = function (state) {
+        var pwr = _.isNil(state) || !_.isFinite(state) ? '?' : state.toString();
+        return self.request(self.playerId, ['power', pwr]).then(
+            function (reply) {
+                var response = {};
+                if (reply && reply.result) {
+                    if (pwr === '?') {
+                        response.mute = reply.result._power;
+                    }
+                }
+                return response;
+            });
+    };
+
+    /**
+     * move to the previous track
+     */
+    self.previous = function () {
+        return self.request(self.playerId, ['button', 'jump_rew']);
+    };
+
+    /**
+     * move the the next track
+     */
+    self.next = function () {
+        return self.request(self.playerId, ['button', 'jump_fwd']);
+    };
+
+    /**
+     * set the volume of the player
+     * @param volume {Number} 0-100
+     * @return {Promise.<*>}
+     */
+    self.volume = function (volume) {
+        var vol = _.isNil(volume) || !_.isFinite(volume) ? '?' : volume.toString();
+        return self.request(self.playerId, ['mixer', 'volume', vol]).then(
+            function (reply) {
+                var response = {};
+                if (reply && reply.result) {
+                    response.volume = reply.result._volume;
+                }
+                return response;
+            });
+    };
+
+    /**
+     * get Currently playing song information
      * @return {*} song information with cover url if any
      */
     self.getCurrentlyPlaying = function () {
         return self.getPath().then(
-            function (response) {
-                return self.songInfo(response.result).then(
-                    function (reply) {
-                        if (reply.ok) {
-                            if (!reply.result) {
-                                reply.result = {};
+            function (path) {
+                if (path && path.result) {
+                    return self.songInfo(path.result).then(
+                        function (songinfo) {
+                            var response = {};
+                            if (songinfo && songinfo.result) {
+                                _.assign(response, songinfo);
+                                if (!response.coverid) {
+                                    response.coverid = 'unknown';
+                                }
+                                response.coverurl = '/music/' + response.coverid + '/cover.jpg';
                             }
-                            if (!reply.result.coverid) {
-                                reply.result.coverid = 'unknown';
-                            }
-                            reply.result.coverurl = '/music/' + reply.result.coverid + '/cover.jpg';
-                        }
-                        return reply;
-                    });
-            });
-    };
-
-    self.getCurrentRemoteMeta = function () {
-        return self.request(self.playerId, ['status']).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result.remoteMeta;
+                            return response;
+                        });
                 }
-                return reply;
-            });
-    };
-
-    self.getStatus = function () {
-        return self.request(self.playerId, ['status']);
-    };
-
-    self.getStatusWithPlaylist = function (from, to) {
-        return self.request(self.playerId, ['status', from, to]);
-    };
-
-    self.getPlaylist = function (from, to) {
-        return self.request(self.playerId, ['status', from, to]).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result.playlist_loop;
-                }
-                return reply;
             });
     };
 
     /**
      * Play a song, given its path (url) or
-     * a list of songs matching any combination of:
-     * genre, artist, album names (NOT ids!!!)
-     * @param url String path to the song
-     * @param genre String genre name or *
-     * @param artist String artist name or *
-     * @param album String album name or *
+     * a list of songs matching any combination of: genre, artist, album names (NOT ids!!!)
+     * @param url {String} path to the song
+     * @param genre {String} genre name
+     * @param artist {String} artist name
+     * @param album {String} album name
      */
     self.play = function (url, genre, artist, album) {
-        var params,
-            mgenre = (!genre) ? '*' : genre,
-            martist = (!artist) ? '*' : artist,
-            malbum = (!album) ? '*' : album;
+        return Promise.try(function () {
+            var params,
+                murl = (_.isNil(url)) ? '*' : url,
+                mgenre = (_.isNil(genre)) ? '*' : genre,
+                martist = (_.isNil(artist)) ? '*' : artist,
+                malbum = (_.isNil(album)) ? '*' : album;
 
-        if (!url && !genre && !artist && !album) {
-            params = ['play'];
-        } else if (url) {
-            params = ['playlist', 'play', url];
-        } else {
-            params = ['playlist', 'loadalbum', mgenre, martist, malbum]
-        }
+            if (_.every([murl, mgenre, martist, malbum], function (v) {
+                    return v === '*'
+                })) {
+                throw new TypeError('url, genre, artist, album', 'lmsplayer.js');
+            }
 
-        return self.request(self.playerId, params);
+            if (url && url !== '*') {
+                params = ['playlist', 'play', url];
+            } else {
+                params = ['playlist', 'loadalbum', mgenre, martist, malbum]
+            }
+
+            return self.request(self.playerId, params);
+        });
     };
 
     /**
-     * Play the playlist by playlist id
-     * @param playlistId Number the playlist id
+     * get the player name by player id or index
+     * @param nameOrIndex {String} the player id or index
      */
-    self.playPlaylist = function (playlistId) {
-        return self.request(self.playerId, ['playlistcontrol', 'cmd:load', 'playlist_id:' + playlistId]);
+    self.name = function (nameOrIndex) {
+        return Promise.try(function () {
+            if (_.isNil(nameOrIndex)) {
+                throw new TypeError('nameOrIndex', 'lmsplayer.js');
+            }
+            return self.request(self.playerId, ['name', nameOrIndex, '?']).then(
+                function (reply) {
+                    var response = {};
+                    if (reply && reply.result) {
+                        response.name = reply.result._value;
+                    }
+                    return response;
+                });
+        });
     };
 
     /**
-     * Play current playlist at index
-     * @param index Number
+     * get the currently playing title
+     * @return {Promise.<*>}
+     */
+    self.getCurrentTitle = function () {
+        return self.request(self.playerId, ['current_title', '?']).then(
+            function (reply) {
+                var response = {};
+                if (reply && reply.result) {
+                    response.title = reply.result._current_title;
+                }
+                return response;
+            });
+    };
+
+    /**
+     * get the currently playing artist
+     * @return {Promise.<*>}
+     */
+    self.getArtist = function () {
+        return self.request(self.playerId, ['artist', '?']).then(
+            function (reply) {
+                var response = {};
+                if (reply && reply.result) {
+                    response.artist = reply.result._artist;
+                }
+                return response;
+            });
+    };
+
+    /**
+     * get the currently playing album
+     * @return {Promise.<*>}
+     */
+    self.getAlbum = function () {
+        return self.request(self.playerId, ['album', '?']).then(
+            function (reply) {
+                var response = {};
+                if (reply && reply.result) {
+                    response.album = reply.result._album;
+                }
+                return response;
+            });
+    };
+
+    /**
+     * play song at specified index on the current playlist
+     * @param index {Number} the index to play
      */
     self.playIndex = function (index) {
         return self.request(self.playerId, ['playlist', 'index', index]);
     };
 
-    self.pause = function (pause) {
-        pause = (pause === 1 || !!pause) ? 1 : 0;
-        return self.request(self.playerId, ['pause', pause]);
-    };
-
-    self.mute = function (mute) {
-        mute = (mute === 1 || !!mute) ? 1 : 0;
-        return self.request(self.playerId, ['mixer', 'muting', mute]);
-    };
-
-    self.stop = function () {
-        return self.request(self.playerId, ['stop']);
-    };
-
-    self.previous = function () {
-        return self.request(self.playerId, ['button', 'jump_rew']);
-    };
-
-    self.next = function () {
-        return self.request(self.playerId, ['button', 'jump_fwd']);
-    };
-
-    self.playlistAdd = function (item) {
-        return self.request(self.playerId, ['playlist', 'add', item]);
-    };
-
-    self.playlistInsert = function (item) {
-        return self.request(self.playerId, ['playlist', 'insert', item]);
+    /**
+     * Get the tracks for a specific playlist
+     * @param playlistId {string} the playlist id to look up
+     * @param skip {Number} start at
+     * @param take {Number} take this many
+     * @return {Promise.<*>}
+     */
+    self.getPlaylist = function (playlistId, skip, take) {
+        return Promise.try(function () {
+            var s = _.isFinite(skip) && skip >= 0 ? skip : 0,
+                t = _.isFinite(take) && take >= 1 ? take : 100000,
+                params = ['playlists', 'tracks', s, t, 'tags:aAsSelgGpPcdtyuJ'];
+            if (_.isNil(playlistId)) {
+                throw new TypeError('playlistId', 'lmsplayer.js');
+            }
+            params.push('playlist_id:' + playlistId);
+            return self.request(self.defaultPlayer, params).then(
+                function (reply) {
+                    var response = {};
+                    if (reply && reply.result) {
+                        response.count = reply.result.count;
+                        response.title = reply.result.__playlistTitle;
+                        response.tracks = reply.result.playlisttracks_loop;
+                    }
+                    return response;
+                });
+        });
     };
 
     /**
-     * Appends all songs matching the specified criteria onto the end of the playlist
-     * @param genre String genre name
-     * @param artist String artist name
-     * @param album String album name
+     * create a new empty playlist
+     * @param name {string} the new playlist name
+     * @return {Promise.<*>}
      */
-    self.playlistAddAlbum = function (genre, artist, album) {
-        var mgenre = (!genre) ? '*' : genre,
-            martist = (!artist) ? '*' : artist,
-            malbum = (!album) ? '*' : album;
-        return self.request(self.playerId, ['playlist', 'addalbum', mgenre, martist, malbum]);
+    self.createPlaylist = function (name) {
+        return Promise.try(function () {
+            var params = ['playlists', 'new'];
+            if (_.isNil(name)) {
+                throw new TypeError('name', 'lmsplayer.js');
+            }
+            params.push('name' + name);
+            return self.request(self.defaultPlayer, params).then(
+                function (reply) {
+                    if (reply && reply.result) {
+                        var response = {};
+                        // playlist not created if property overwritten_playlist_id exists
+                        if (reply.result.overwritten_playlist_id) {
+                            throw new Error({
+                                message: 'a playlist with that name already exists.',
+                                meta: reply.result.overwritten_playlist_id
+                            });
+                        }
+                        response.id = reply.result.playlist_id
+                    }
+                    return response;
+                });
+        });
     };
 
-    self.playlistDelete = function (index) {
-        return self.request(self.playerId, ['playlist', 'delete', index]);
+    /**
+     * rename playlist
+     * @param playlistId {String} the playlist id
+     * @param name {String} the new playlist name
+     * @param dryRun {Boolean} true is dryrun
+     */
+    self.renamePlaylist = function (playlistId, name, dryRun) {
+        return Promise.try(function () {
+            var _dryRun = (_.isNil(dryRun) || _.isBoolean(dryRun) && dryRun) ? 1 : 0,
+                params = ['playlists', 'rename'];
+            if (_.isNil(playlistId) || _.isNil(name)) {
+                throw new TypeError('playlistId or name', 'lmsplayer.js');
+            }
+            params.push('playlist_id:' + playlistId);
+            params.push('newname:' + name);
+            // playlist not renamed when dry_run:1 and property 'overwritten_playlist_id' exists
+            params.push('dry_run:' + _dryRun);
+            self.request(self.defaultPlayer, params).then(
+                function (reply) {
+                    if (reply && reply.result) {
+                        if (reply.result.overwritten_playlist_id) {
+                            throw new Error({
+                                message: 'a playlist with that name already exists.',
+                                meta: {
+                                    overwrittenPlaylistId: reply.result.overwritten_playlist_id,
+                                }
+                            })
+                        }
+                    }
+                });
+        });
     };
 
-    self.playlistMove = function (fromIndex, toIndex) {
-        return self.request(self.playerId, ['playlist', 'move', fromIndex, toIndex]);
+    /**
+     * delete playlist
+     * @param playlistId {string} the playlist id
+     */
+    self.deletePlaylist = function (playlistId) {
+        return Promise.try(function () {
+            var params = ['playlists', 'delete'];
+            if (_.isNil(playlistId)) {
+                throw new TypeError('playlistId', 'lmsplayer.js');
+            }
+            params.push('playlist_id:' + playlistId);
+            return self.request(self.defaultPlayer, params);
+        });
     };
 
+    /**
+     * add a track to current playlist by the track url
+     * @param url {string} the track url
+     */
+    self.addTrackToPlaylistByTrackUrl = function (url) {
+        return Promise.try(function () {
+            var params = ['playlist', 'add'];
+            if (_.isNil(url)) {
+                throw new TypeError('url', 'lmsplayer.js');
+            }
+            params.push(url);
+            return self.request(self.playerId, params);
+        });
+    };
+
+    /**
+     * add track(s) to current playlist by track id(s)
+     * @param ids {Array|String} either an array of ids or a single id
+     * @return {Promise.<*>}
+     */
+    self.addTracksToPlaylistByTrackIds = function (ids) {
+        return Promise.try(function () {
+            var params = ['playlistcontrol', 'cmd:add'],
+                csv = function (i) {
+                    return _.isArray(i) ? _.join(i, ',') : i;
+                };
+            if (_.isNil(ids)) {
+                throw new TypeError('ids', 'lmsplayer.js');
+            }
+            params.push('track_id:' + csv(ids));
+            return self.request(self.playerId, params).then(
+                function (reply) {
+                    if (reply && _.has(reply, 'result.count') && reply.result.count > 0) {
+                        return {count: reply.result.count};
+                    } else {
+                        throw new Error({
+                            message: 'track(s) not added to current playlist.',
+                            meta: {ids: ids}
+                        })
+                    }
+                });
+        });
+    };
+
+    /**
+     * add track(s) to current playlist by artistId
+     * @param artistId {Number} the artist id
+     * @return {*}
+     */
+    self.addTracksToPlaylistByArtistId = function (artistId) {
+        return Promise.try(function () {
+            var params = ['playlistcontrol', 'cmd:add'];
+            if (_.isNil(artistId)) {
+                throw new TypeError('artistId', 'lmsplayer.js');
+            }
+            params.push('artist_id:' + artistId);
+            return self.request(self.playerId, params).then(
+                function (reply) {
+                    if (reply && _.has(reply, 'result.count') && reply.result.count > 0) {
+                        return {count: reply.result.count};
+                    } else {
+                        throw new Error({
+                            message: 'track(s) not added to current playlist.',
+                            meta: {id: artistId}
+                        })
+                    }
+                });
+        });
+    };
+
+    /**
+     * add track(s) to current playlist by albumId
+     * @param albumId {Number} the album id
+     * @return {*}
+     */
+    self.addTracksToPlaylistByAlbumId = function (albumId) {
+        return Promise.try(function () {
+            var params = ['playlistcontrol', 'cmd:add'];
+            if (_.isNil(albumId)) {
+                throw new TypeError('albumId', 'lmsplayer.js');
+            }
+            params.push('album_id:' + albumId);
+            return self.request(self.playerId, params).then(
+                function (reply) {
+                    if (reply && _.has(reply, 'result.count') && reply.result.count > 0) {
+                        return {count: reply.result.count};
+                    } else {
+                        throw new Error({
+                            message: 'track(s) not added to current playlist.',
+                            meta: {id: albumId}
+                        })
+                    }
+                });
+        });
+    };
+
+    /**
+     * add track(s) to current playlist by genreId
+     * @param genreId {Number} the genre id
+     * @return {*}
+     */
+    self.addTracksToPlaylistByGenreId = function (genreId) {
+        return Promise.try(function () {
+            var params = ['playlistcontrol', 'cmd:add'];
+            if (_.isNil(genreId)) {
+                throw new TypeError('genreId', 'lmsplayer.js');
+            }
+            params.push('genre_id:' + genreId);
+            return self.request(self.playerId, params).then(
+                function (reply) {
+                    if (reply && _.has(reply, 'result.count') && reply.result.count > 0) {
+                        return {count: reply.result.count};
+                    } else {
+                        throw new Error({
+                            message: 'track(s) not added to current playlist.',
+                            meta: {id: genreId}
+                        })
+                    }
+                });
+        });
+    };
+
+    /**
+     * appends all songs matching the specified criteria onto the end of the playlist
+     * NOTE: null will be replaced with '*'.  Must have at least one search term
+     * @param genre {String} genre name
+     * @param artist {String} artist name
+     * @param album {String} album name
+     * @return {*}
+     */
+    self.addTracksToPlaylistByName = function (genre, artist, album) {
+        return Promise.try(function () {
+            var mgenre = (_.isNil(genre)) ? '*' : genre,
+                martist = (_.isNil(artist)) ? '*' : artist,
+                malbum = (_.isNil(album)) ? '*' : album;
+            if (_.every([mgenre, martist, malbum], function (v) {
+                    return v === '*'
+                })) {
+                throw new TypeError('genre, artist, album', 'lmsplayer.js');
+            }
+            return self.request(self.playerId, ['playlist', 'addalbum', mgenre, martist, malbum]);
+        });
+    };
+
+    /**
+     * Removes tracks that match the specified genre artist and album criteria from the playlist
+     * NOTE: null will be replaced with '*'.  Must have at least one search term
+     * @param genre {String} genre name
+     * @param artist {String} artist name
+     * @param album {String} album name
+     * @return {*}
+     */
+    self.removeTracksFromPlaylistByName = function (genre, artist, album) {
+        return Promise.try(function () {
+            var mgenre = (_.isNil(genre)) ? '*' : genre,
+                martist = (_.isNil(artist)) ? '*' : artist,
+                malbum = (_.isNil(album)) ? '*' : album;
+            if (_.every([mgenre, martist, malbum], function (v) {
+                    return v === '*'
+                })) {
+                throw new TypeError('genre, artist, album', 'lmsplayer.js');
+            }
+            return self.request(self.playerId, ['playlist', 'deletealbum', mgenre, martist, malbum]);
+        });
+    };
+
+    /**
+     * remove track from current playlist by the index of the track in the playlist
+     * @param index {Number} the track index
+     */
+    self.removeTrackFromPlaylistByIndex = function (index) {
+        return Promise.try(function () {
+            var params = ['playlist', 'delete'];
+            if (_.isNil(index) || !_.isFinite(index)) {
+                throw new TypeError('index', 'lmsplayer.js');
+            }
+            params.push(index);
+            return self.request(self.playerId, params);
+        });
+    };
+
+    /**
+     * remove track from current playlist by track url
+     * @param url {string} the track url
+     */
+    self.removeTrackFromPlaylistByTrackUrl = function (url) {
+        return Promise.try(function () {
+            var params = ['playlist', 'deleteitem'];
+            if (_.isNil(url)) {
+                throw new TypeError('url', 'lmsplayer.js');
+            }
+            params.push(url);
+            return self.request(self.playerId, params);
+        });
+    };
+
+    /**
+     * clear the current playlist
+     */
+    self.clearPlayList = function () {
+        return self.request(self.playerId, ['playlist', 'clear']);
+    };
+
+    /**
+     * load the playlist
+     * NOTE: this will replace current playlist and start playing
+     * @param playlistId {Number} the playlist id
+     * @return {*}
+     */
+    self.loadPlaylist = function (playlistId) {
+        return Promise.try(function () {
+            var params = ['playlistcontrol', 'cmd:load'];
+            if (_.isNil(playlistId)) {
+                throw new TypeError('playlistId', 'lmsplayer.js');
+            }
+            params.push('playlist_id:' + playlistId);
+            return self.request(self.playerId, params).then(
+                function (reply) {
+                    if (reply && reply.result) {
+                        if (reply.result.count === 0) {
+                            throw new Error({message: 'unable to load playlist.', meta: playlistId})
+                        }
+                        return reply;
+                    }
+                });
+        });
+    };
+
+    /**
+     * inserts the specified song URL to be played immediately after the current song in the current playlist
+     * @param url {String} the track url
+     * @return {*}
+     */
+    self.insertTrackIntoPlaylist = function (url) {
+        return Promise.try(function () {
+            var params = ['playlist', 'insert'];
+            if (_.isNil(url)) {
+                throw new TypeError('url', 'lmsplayer.js');
+            }
+            params.push(url);
+            return self.request(self.playerId, params);
+        });
+    };
+
+    /**
+     * Play the playlist by playlist id
+     * @param playlistId {Number} the playlist id
+     */
+    self.playPlaylist = function (playlistId) {
+        return Promise.try(function () {
+            var params = ['playlistcontrol', 'cmd:load'];
+            if (_.isNil(playlistId)) {
+                throw new TypeError('playlistId', 'lmsplayer.js');
+            }
+            params.push('playlist_id:' + playlistId);
+            return self.request(self.playerId, params);
+        });
+    };
+
+    /**
+     * Move a track from index to index in current playlist
+     * @param fromIndex {Number} 0-N
+     * @param toIndex {Number} 0-N
+     * @return {*}
+     */
+    self.moveTracksInPlaylist = function (fromIndex, toIndex) {
+        return Promise.try(function () {
+            if (!_.isFinite(fromIndex) || !_.isFinite(toIndex)) {
+                throw new TypeError('fromIndex or toIndex', 'lmsplayer.js');
+            }
+            return self.request(self.playerId, ['playlist', 'move', fromIndex, toIndex]);
+        });
+    };
+
+    /**
+     * saves playlist file in the saved playlists directory.  accepts a playlist filename (without .m3u suffix)
+     * @param playlistName
+     */
     self.playlistSave = function (playlistName) {
-        return self.request(self.playerId, ['playlist', 'save', playlistName]);
-    };
-
-    self.sync = function (syncTo) {
-        return self.request(self.playerId, ['sync', syncTo]);
-    };
-
-    self.unSync = function () {
-        return self.request(self.playerId, ['sync', '-']);
-    };
-
-    self.seek = function (seconds) {
-        return self.request(self.playerId, ['time', seconds]);
-    };
-
-    self.setVolume = function (volume) {
-        return self.request(self.playerId, ['mixer', 'volume', volume]);
-    };
-
-    self.getVolume = function () {
-        return self.request(self.playerId, ['mixer', 'volume', '?']).then(
-            function (reply) {
-                if (reply.ok) {
-                    reply.result = reply.result._volume;
-                }
-                return reply;
-            });
-    };
-
-    self.randomPlay = function (target) {
-        return self.request(self.playerId, ['randomplay', target]);
-    };
-
-    self.power = function (state) {
-        return self.request(self.playerId, ['power', state]);
+        return Promise.try(function () {
+            if (_.isNil(playlistName)) {
+                throw new TypeError('playlistName', 'lmsplayer.js');
+            }
+            return self.request(self.playerId, ['playlist', 'save', playlistName]);
+        });
     };
 }
 

@@ -1,36 +1,37 @@
 {
-  "name": "squeezenode-lordpengwin",
-  "author": "Piotr Raczynski <pio[dot]raczynski[at]gmail[dot]com>",
-  "version": "0.0.9",
-  "description": "Node.js wrapper library for squeezebox CLI/json interface with Spotify/SoundCloud support",
-  "main": "server.js",
-  "keywords": [
-    "squeezebox",
-    "logitechmediaserver",
-    "spotify",
-    "soundcloud",
-    "jsonrpc",
-    "remote",
-    "smarthome",
-    "home automation"
-  ],
-  "dependencies": {
-    "jayson": "2.0.2",
-    "super": "0.2.3",
-    "request": "2.79.0",
-    "bluebird": "^3.4.7"
-  },
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
-    "chai-spies": "^0.7.1",
-    "mocha": "^3.2.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/piotrraczynski/squeezenode.git"
-  },
-  "scripts": {
-    "test": "mocha"
-  }
+    "name": "squeezenode",
+    "author": "Anthony Romano",
+    "version": "1.0.0",
+    "description": "Node.js wrapper library for squeezebox CLI/json interface with Spotify/SoundCloud support",
+    "main": "squeezeserver.js",
+    "keywords": [
+        "squeezebox",
+        "logitechmediaserver",
+        "spotify",
+        "soundcloud",
+        "jsonrpc",
+        "remote",
+        "smarthome",
+        "home automation"
+    ],
+    "dependencies": {
+        "jayson": "^2.0.4",
+        "super": "^0.2.3",
+        "request": "^2.81.0",
+        "bluebird": "^3.5.0",
+        "lodash": "^4.17.4"
+    },
+    "devDependencies": {
+        "chai": "^4.1.2",
+        "chai-as-promised": "^7.1.1",
+        "chai-spies": "^0.7.1",
+        "mocha": "^3.5.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/obscuredvision/squeezenode.git"
+    },
+    "scripts": {
+        "test": "mocha"
+    }
 }
