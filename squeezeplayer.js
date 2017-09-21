@@ -1,4 +1,5 @@
 var inherits = require('super'),
+    Promise = require('bluebird'),
     _ = require('lodash'),
     SqueezeRequest = require('./squeezerequest');
 
