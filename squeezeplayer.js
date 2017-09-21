@@ -2,10 +2,10 @@ var inherits = require('super'),
     _ = require('lodash'),
     SqueezeRequest = require('./squeezerequest');
 
-function SqueezePlayer(playerId, name, address, port, username, password) {
+function SqueezePlayer(playerId, playerName, address, port, username, password) {
     var self = this;
     self.playerId = playerId;
-    self.name = name;
+    self.playerName = playerName;
 
     SqueezePlayer.super_.apply(self, [address, port, username, password]);
 
