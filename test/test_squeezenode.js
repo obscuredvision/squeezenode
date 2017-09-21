@@ -14,10 +14,10 @@ var expect = chai.expect,
 describe('Squeezenode', function () {
 
     var squeeze,
-        url = 'http://192.168.1.13',
-        port = 9000,
-        username = 'akrmusic',
-        password = '0I8I0Fl@';
+        url = '',
+        port = '',
+        username = '',
+        password = '@';
 
     beforeEach(function () {
         squeeze = new squeezenode(url, port, username, password);
