@@ -2,7 +2,8 @@
 var chai = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
     spies = require('chai-spies'),
-    squeezenode = require('../');
+    squeezenode = require('../'),
+    config = require('../test.json');
 
 chai.config.includeStack = true;
 chai.use(spies);
@@ -14,10 +15,10 @@ var expect = chai.expect,
 describe('Squeezenode', function () {
 
     var squeeze,
-        url = '',
-        port = '',
-        username = '',
-        password = '@';
+        url = config.url,
+        port = config.port,
+        username = config.username,
+        password = config.password;
 
     beforeEach(function () {
         squeeze = new squeezenode(url, port, username, password);

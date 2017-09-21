@@ -3,4 +3,4 @@ node_modules
 /.project
 /.externalToolBuilders
 /.settings
-/test.txt
+/test.json
