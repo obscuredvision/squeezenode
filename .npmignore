@@ -4,3 +4,4 @@ npm-debug.log
 .git
 node_modules
 .idea
+/test.json
