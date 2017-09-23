@@ -29,7 +29,7 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * get player ip address given player id
-     * @param playerId {String} the unique player id
+     * @param playerId {string} the unique player id
      */
     self.getPlayerIp = function (playerId) {
         return self.request(self.defaultPlayer, ['player', 'ip', playerId, '?']);
@@ -37,7 +37,7 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * get player name given player id
-     * @param playerId {String} the unique player id
+     * @param playerId {string} the unique player id
      */
     self.getPlayerName = function (playerId) {
         return self.request(self.defaultPlayer, ['player', 'name', playerId, '?']);
@@ -218,7 +218,7 @@ function SqueezeServer(address, port, username, password) {
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
                 params = ['albums', s, t, 'tags:tSS'];
             if (_.isNil(artistId)) {
-                throw new TypeError('artistId', 'lmsserver.js');
+                throw new TypeError('artistId');
             }
             params.push('artist_id:' + artistId);
             return self.request(self.defaultPlayer, params).then(
@@ -246,7 +246,7 @@ function SqueezeServer(address, port, username, password) {
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
                 params = ['tracks', s, t, 'tags:seuSp'];
             if (_.isNil(albumId)) {
-                throw new TypeError('albumId', 'lmsserver.js');
+                throw new TypeError('albumId');
             }
             params.push('album_id:' + albumId);
             return self.request(self.defaultPlayer, params).then(
@@ -274,7 +274,7 @@ function SqueezeServer(address, port, username, password) {
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
                 params = ['tracks', s, t, 'tags:seuSp'];
             if (_.isNil(artistId)) {
-                throw new TypeError('artistId', 'lmsserver.js');
+                throw new TypeError('artistId');
             }
             params.push('artist_id:' + artistId);
             return self.request(self.defaultPlayer, params).then(
@@ -302,7 +302,7 @@ function SqueezeServer(address, port, username, password) {
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
                 params = ['tracks', s, t, 'tags:seuSp'];
             if (_.isNil(genreId)) {
-                throw new TypeError('genreId', 'lmsserver.js');
+                throw new TypeError('genreId');
             }
             params.push('genre_id:' + genreId);
             return self.request(self.defaultPlayer, params).then(
@@ -329,7 +329,7 @@ function SqueezeServer(address, port, username, password) {
                 t = !_.isFinite(take) && take >= 1 ? take : '5',
                 params = ['search', s, t, 'extended:1'];
             if (_.isNil(term)) {
-                throw new TypeError('term', 'lmsserver.js');
+                throw new TypeError('term');
             }
             params.push('term:' + term);
             return self.request(self.defaultPlayer, params).then(

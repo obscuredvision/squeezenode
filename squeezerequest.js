@@ -34,7 +34,7 @@ function SqueezeRequest(address, port, username, password) {
 
     /**
      * get the parameters for a player mode
-     * @param mode {String} player mode of type PlayerMode
+     * @param mode {string} player mode of type PlayerMode
      * @return {Array}
      */
     self.playerModeToParams = function (mode) {
@@ -73,7 +73,7 @@ function SqueezeRequest(address, port, username, password) {
             var params = ['songinfo', 0, 100, 'tags:aAsSelgGpPcdtyuJ'];
 
             if (_.isNil(trackIdOrUrl)) {
-                throw new TypeError('trackIdOrUrl', 'lmsserver.js');
+                throw new TypeError('trackIdOrUrl');
             } else if (trackIdOrUrl.indexOf('file://') !== -1) {
                 params.push('url:' + trackIdOrUrl);
             } else {

@@ -61,7 +61,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * set the player mode
-     * @param mode {String} player mode see: constants.PlayerMode
+     * @param mode {string} player mode see: constants.PlayerMode
      * @param state {Number} 0/1
      * @return {*}
      */
@@ -69,7 +69,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
         return Promise.try(function () {
             var params = self.playerModeToParams(mode);
             if (util.isNullOrEmpty(params) || util.isNullOrEmpty(state) || util.isNaN(state)) {
-                throw new TypeError('mode or state', 'lmsplayer.js');
+                throw new TypeError('mode or state');
             }
             params.push((state >= 1) ? 1 : 0);
             return self.request(self.playerId, params);
@@ -83,7 +83,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     self.pause = function (pause) {
         return Promise.try(function () {
             if (!_.isFinite(pause)) {
-                throw new TypeError('pause', 'lmsplayer.js');
+                throw new TypeError('pause');
             }
             pause = (pause >= 1 || !!pause) ? 1 : 0;
             return self.request(self.playerId, ['pause', pause]);
@@ -193,10 +193,10 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * Play a song, given its path (url) or
      * a list of songs matching any combination of: genre, artist, album names (NOT ids!!!)
-     * @param url {String} path to the song
-     * @param genre {String} genre name
-     * @param artist {String} artist name
-     * @param album {String} album name
+     * @param url {string} path to the song
+     * @param genre {string} genre name
+     * @param artist {string} artist name
+     * @param album {string} album name
      */
     self.play = function (url, genre, artist, album) {
         return Promise.try(function () {
@@ -209,7 +209,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
             if (_.every([murl, mgenre, martist, malbum], function (v) {
                     return v === '*'
                 })) {
-                throw new TypeError('url, genre, artist, album', 'lmsplayer.js');
+                throw new TypeError('url, genre, artist, album');
             }
 
             if (url && url !== '*') {
@@ -224,12 +224,12 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * get the player name by player id or index
-     * @param nameOrIndex {String} the player id or index
+     * @param nameOrIndex {string} the player id or index
      */
     self.name = function (nameOrIndex) {
         return Promise.try(function () {
             if (_.isNil(nameOrIndex)) {
-                throw new TypeError('nameOrIndex', 'lmsplayer.js');
+                throw new TypeError('nameOrIndex');
             }
             return self.request(self.playerId, ['name', nameOrIndex, '?']).then(
                 function (reply) {
@@ -308,7 +308,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
                 t = _.isFinite(take) && take >= 1 ? take : 100000,
                 params = ['playlists', 'tracks', s, t, 'tags:aAsSelgGpPcdtyuJ'];
             if (_.isNil(playlistId)) {
-                throw new TypeError('playlistId', 'lmsplayer.js');
+                throw new TypeError('playlistId');
             }
             params.push('playlist_id:' + playlistId);
             return self.request(self.defaultPlayer, params).then(
@@ -329,11 +329,11 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * @param name {string} the new playlist name
      * @return {Promise.<*>}
      */
-    self.createPlaylist = function (name) {
+    self.newPlaylist = function (name) {
         return Promise.try(function () {
             var params = ['playlists', 'new'];
             if (_.isNil(name)) {
-                throw new TypeError('name', 'lmsplayer.js');
+                throw new TypeError('name');
             }
             params.push('name' + name);
             return self.request(self.defaultPlayer, params).then(
@@ -355,9 +355,38 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     };
 
     /**
+     * create a new playlist with tracks
+     * @param payload {*} the new playlist object with schema:
+     * {name: string, tracks: [url: string]}
+     * @return {Promise.<*>}
+     */
+    self.createPlaylist = function (payload) {
+        return Promise.try(function () {
+            if (_.isNil(payload) || !_.isPlainObject(payload) || !_.has(payload, 'name')) {
+                throw new TypeError('payload');
+            }
+
+            // we need to create playlist first
+            return newPlaylist(payload.name).then(function (response) {
+                if (_.has(response, 'id')) {
+                    // playlist created now add tracks
+                    return Promise.map(payload.tracks, function (track) {
+                        return addTrackToPlaylistByTrackUrl(response.id, track);
+                    });
+                } else {
+                    throw new Error({
+                        message: 'Playlist "' + payload.name + '" was not created and tracks could not be added.',
+                        meta: payload
+                    });
+                }
+            });
+        });
+    };
+
+    /**
      * rename playlist
-     * @param playlistId {String} the playlist id
-     * @param name {String} the new playlist name
+     * @param playlistId {string} the playlist id
+     * @param name {string} the new playlist name
      * @param dryRun {Boolean} true is dryrun
      */
     self.renamePlaylist = function (playlistId, name, dryRun) {
@@ -365,7 +394,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
             var _dryRun = (_.isNil(dryRun) || _.isBoolean(dryRun) && dryRun) ? 1 : 0,
                 params = ['playlists', 'rename'];
             if (_.isNil(playlistId) || _.isNil(name)) {
-                throw new TypeError('playlistId or name', 'lmsplayer.js');
+                throw new TypeError('playlistId or name');
             }
             params.push('playlist_id:' + playlistId);
             params.push('newname:' + name);
@@ -395,7 +424,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
         return Promise.try(function () {
             var params = ['playlists', 'delete'];
             if (_.isNil(playlistId)) {
-                throw new TypeError('playlistId', 'lmsplayer.js');
+                throw new TypeError('playlistId');
             }
             params.push('playlist_id:' + playlistId);
             return self.request(self.defaultPlayer, params);
@@ -403,14 +432,31 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     };
 
     /**
+     * add a track to the specified playlist by the track url
+     * @param playlistId {string} the playlist id
+     * @param url {string} the track url (ex: file:///...file.mp3)
+     */
+    self.addTrackToPlaylistByTrackUrl = function (playlistId, url) {
+        return Promise.try(function () {
+            var params = ['playlists', 'edit', 'cmd:add'];
+            if (_.isNil(url) || _.isNil(playlistId)) {
+                throw new TypeError('url, playlistId');
+            }
+            params.push('playlist_id:' + playlistId);
+            params.push('url:' + url);
+            return self.request(self.playerId, params);
+        });
+    };
+
+    /**
      * add a track to current playlist by the track url
      * @param url {string} the track url
      */
-    self.addTrackToPlaylistByTrackUrl = function (url) {
+    self.addTrackToCurrentPlaylistByTrackUrl = function (url) {
         return Promise.try(function () {
             var params = ['playlist', 'add'];
             if (_.isNil(url)) {
-                throw new TypeError('url', 'lmsplayer.js');
+                throw new TypeError('url');
             }
             params.push(url);
             return self.request(self.playerId, params);
@@ -419,17 +465,17 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * add track(s) to current playlist by track id(s)
-     * @param ids {Array|String} either an array of ids or a single id
+     * @param ids {Array|string} either an array of ids or a single id
      * @return {Promise.<*>}
      */
-    self.addTracksToPlaylistByTrackIds = function (ids) {
+    self.addTracksToCurrentPlaylistByTrackIds = function (ids) {
         return Promise.try(function () {
             var params = ['playlistcontrol', 'cmd:add'],
                 csv = function (i) {
                     return _.isArray(i) ? _.join(i, ',') : i;
                 };
             if (_.isNil(ids)) {
-                throw new TypeError('ids', 'lmsplayer.js');
+                throw new TypeError('ids');
             }
             params.push('track_id:' + csv(ids));
             return self.request(self.playerId, params).then(
@@ -451,11 +497,11 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * @param artistId {Number} the artist id
      * @return {*}
      */
-    self.addTracksToPlaylistByArtistId = function (artistId) {
+    self.addTracksToCurrentPlaylistByArtistId = function (artistId) {
         return Promise.try(function () {
             var params = ['playlistcontrol', 'cmd:add'];
             if (_.isNil(artistId)) {
-                throw new TypeError('artistId', 'lmsplayer.js');
+                throw new TypeError('artistId');
             }
             params.push('artist_id:' + artistId);
             return self.request(self.playerId, params).then(
@@ -477,11 +523,11 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * @param albumId {Number} the album id
      * @return {*}
      */
-    self.addTracksToPlaylistByAlbumId = function (albumId) {
+    self.addTracksToCurrentPlaylistByAlbumId = function (albumId) {
         return Promise.try(function () {
             var params = ['playlistcontrol', 'cmd:add'];
             if (_.isNil(albumId)) {
-                throw new TypeError('albumId', 'lmsplayer.js');
+                throw new TypeError('albumId');
             }
             params.push('album_id:' + albumId);
             return self.request(self.playerId, params).then(
@@ -503,11 +549,11 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * @param genreId {Number} the genre id
      * @return {*}
      */
-    self.addTracksToPlaylistByGenreId = function (genreId) {
+    self.addTracksToCurrentPlaylistByGenreId = function (genreId) {
         return Promise.try(function () {
             var params = ['playlistcontrol', 'cmd:add'];
             if (_.isNil(genreId)) {
-                throw new TypeError('genreId', 'lmsplayer.js');
+                throw new TypeError('genreId');
             }
             params.push('genre_id:' + genreId);
             return self.request(self.playerId, params).then(
@@ -527,12 +573,12 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * appends all songs matching the specified criteria onto the end of the playlist
      * NOTE: null will be replaced with '*'.  Must have at least one search term
-     * @param genre {String} genre name
-     * @param artist {String} artist name
-     * @param album {String} album name
+     * @param genre {string} genre name
+     * @param artist {string} artist name
+     * @param album {string} album name
      * @return {*}
      */
-    self.addTracksToPlaylistByName = function (genre, artist, album) {
+    self.addTracksToCurrentPlaylistByName = function (genre, artist, album) {
         return Promise.try(function () {
             var mgenre = (_.isNil(genre)) ? '*' : genre,
                 martist = (_.isNil(artist)) ? '*' : artist,
@@ -540,7 +586,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
             if (_.every([mgenre, martist, malbum], function (v) {
                     return v === '*'
                 })) {
-                throw new TypeError('genre, artist, album', 'lmsplayer.js');
+                throw new TypeError('genre, artist, album');
             }
             return self.request(self.playerId, ['playlist', 'addalbum', mgenre, martist, malbum]);
         });
@@ -549,12 +595,12 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * Removes tracks that match the specified genre artist and album criteria from the playlist
      * NOTE: null will be replaced with '*'.  Must have at least one search term
-     * @param genre {String} genre name
-     * @param artist {String} artist name
-     * @param album {String} album name
+     * @param genre {string} genre name
+     * @param artist {string} artist name
+     * @param album {string} album name
      * @return {*}
      */
-    self.removeTracksFromPlaylistByName = function (genre, artist, album) {
+    self.removeTracksFromCurrentPlaylistByName = function (genre, artist, album) {
         return Promise.try(function () {
             var mgenre = (_.isNil(genre)) ? '*' : genre,
                 martist = (_.isNil(artist)) ? '*' : artist,
@@ -562,7 +608,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
             if (_.every([mgenre, martist, malbum], function (v) {
                     return v === '*'
                 })) {
-                throw new TypeError('genre, artist, album', 'lmsplayer.js');
+                throw new TypeError('genre, artist, album');
             }
             return self.request(self.playerId, ['playlist', 'deletealbum', mgenre, martist, malbum]);
         });
@@ -572,11 +618,11 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * remove track from current playlist by the index of the track in the playlist
      * @param index {Number} the track index
      */
-    self.removeTrackFromPlaylistByIndex = function (index) {
+    self.removeTrackFromCurrentPlaylistByIndex = function (index) {
         return Promise.try(function () {
             var params = ['playlist', 'delete'];
             if (_.isNil(index) || !_.isFinite(index)) {
-                throw new TypeError('index', 'lmsplayer.js');
+                throw new TypeError('index');
             }
             params.push(index);
             return self.request(self.playerId, params);
@@ -587,11 +633,11 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * remove track from current playlist by track url
      * @param url {string} the track url
      */
-    self.removeTrackFromPlaylistByTrackUrl = function (url) {
+    self.removeTrackFromCurrentPlaylistByTrackUrl = function (url) {
         return Promise.try(function () {
             var params = ['playlist', 'deleteitem'];
             if (_.isNil(url)) {
-                throw new TypeError('url', 'lmsplayer.js');
+                throw new TypeError('url');
             }
             params.push(url);
             return self.request(self.playerId, params);
@@ -615,7 +661,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
         return Promise.try(function () {
             var params = ['playlistcontrol', 'cmd:load'];
             if (_.isNil(playlistId)) {
-                throw new TypeError('playlistId', 'lmsplayer.js');
+                throw new TypeError('playlistId');
             }
             params.push('playlist_id:' + playlistId);
             return self.request(self.playerId, params).then(
@@ -631,15 +677,26 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     };
 
     /**
-     * inserts the specified song URL to be played immediately after the current song in the current playlist
-     * @param url {String} the track url
+     * load a playlist then issue a stop command so it will not play
+     * @param playlistId {string} the playlist id
      * @return {*}
      */
-    self.insertTrackIntoPlaylist = function (url) {
+    self.loadPlaylistAndStop = function (playlistId) {
+        return loadPlaylist(playlistId).then(function () {
+            return mode('stop', 1);
+        });
+    };
+
+    /**
+     * inserts the specified song URL to be played immediately after the current song in the current playlist
+     * @param url {string} the track url
+     * @return {*}
+     */
+    self.insertTrackIntoCurrentPlaylist = function (url) {
         return Promise.try(function () {
             var params = ['playlist', 'insert'];
             if (_.isNil(url)) {
-                throw new TypeError('url', 'lmsplayer.js');
+                throw new TypeError('url');
             }
             params.push(url);
             return self.request(self.playerId, params);
@@ -654,7 +711,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
         return Promise.try(function () {
             var params = ['playlistcontrol', 'cmd:load'];
             if (_.isNil(playlistId)) {
-                throw new TypeError('playlistId', 'lmsplayer.js');
+                throw new TypeError('playlistId');
             }
             params.push('playlist_id:' + playlistId);
             return self.request(self.playerId, params);
@@ -667,10 +724,10 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * @param toIndex {Number} 0-N
      * @return {*}
      */
-    self.moveTracksInPlaylist = function (fromIndex, toIndex) {
+    self.moveTracksInCurrentPlaylist = function (fromIndex, toIndex) {
         return Promise.try(function () {
             if (!_.isFinite(fromIndex) || !_.isFinite(toIndex)) {
-                throw new TypeError('fromIndex or toIndex', 'lmsplayer.js');
+                throw new TypeError('fromIndex or toIndex');
             }
             return self.request(self.playerId, ['playlist', 'move', fromIndex, toIndex]);
         });
@@ -683,7 +740,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     self.playlistSave = function (playlistName) {
         return Promise.try(function () {
             if (_.isNil(playlistName)) {
-                throw new TypeError('playlistName', 'lmsplayer.js');
+                throw new TypeError('playlistName');
             }
             return self.request(self.playerId, ['playlist', 'save', playlistName]);
         });
