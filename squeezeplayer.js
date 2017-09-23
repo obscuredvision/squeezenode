@@ -372,6 +372,9 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
                     // playlist created now add tracks
                     return Promise.map(payload.tracks, function (track) {
                         return addTrackToPlaylistByTrackUrl(response.id, track);
+                    }).then(function () {
+                        // return newly create playlist id
+                        return {name: payload.name, id: response.id};
                     });
                 } else {
                     throw new Error({
@@ -440,7 +443,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
         return Promise.try(function () {
             var params = ['playlists', 'edit', 'cmd:add'];
             if (_.isNil(url) || _.isNil(playlistId)) {
-                throw new TypeError('url, playlistId');
+                throw new TypeError('playlistId, url');
             }
             params.push('playlist_id:' + playlistId);
             params.push('url:' + url);
