@@ -115,7 +115,7 @@ function SqueezeServer(address, port, username, password) {
     self.albums = function (albumName, skip, take) {
         var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
             t = !_.isFinite(take) && take >= 1 ? take : '-',
-            params = ['albums', s, t, 'tags:tSS'];
+            params = ['albums', s, t, 'tags:atySS'];
         if (!_.isNil(albumName)) {
             params.push('search:' + albumName);
         }
@@ -140,7 +140,7 @@ function SqueezeServer(address, port, username, password) {
     self.tracks = function (trackName, skip, take) {
         var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
             t = !_.isFinite(take) && take >= 1 ? take : '-',
-            params = ['tracks', s, t, 'tags:seuSp'];
+            params = ['tracks', s, t, 'tags:aAeugGsSpP'];
         if (!_.isNil(trackName)) {
             params.push('search:' + trackName);
         }
@@ -205,6 +205,34 @@ function SqueezeServer(address, port, username, password) {
     };
 
     /**
+     * Search for artist given artist id
+     * Returns {id, title, artist_id, artist_ids}
+     * @param artistId {string} the artist id
+     * @param skip {Number} start at
+     * @param take {Number} take this many
+     * @return {*}
+     */
+    self.artistByArtistId = function (artistId, skip, take) {
+        return Promise.try(function () {
+            var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
+                t = !_.isFinite(take) && take >= 1 ? take : '-',
+                params = ['artists', s, t, 'tags:'];
+            if (_.isNil(artistId)) {
+                throw new TypeError('artistId');
+            }
+            params.push('artist_id:' + artistId);
+            return self.request(self.defaultPlayer, params).then(
+                function (reply) {
+                    var response = {};
+                    if (reply && reply.result) {
+                        _.assign(response, {count: reply.result.count, artist: reply.result.artists_loop[0]});
+                    }
+                    return response;
+                });
+        });
+    };
+
+    /**
      * Search for albums given artist id
      * Returns {id, title, artist_id, artist_ids}
      * @param artistId {Number} only albums by this artist
@@ -216,7 +244,7 @@ function SqueezeServer(address, port, username, password) {
         return Promise.try(function () {
             var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
-                params = ['albums', s, t, 'tags:tSS'];
+                params = ['albums', s, t, 'tags:atySS'];
             if (_.isNil(artistId)) {
                 throw new TypeError('artistId');
             }
@@ -226,6 +254,34 @@ function SqueezeServer(address, port, username, password) {
                     var response = {};
                     if (reply && reply.result) {
                         _.assign(response, {count: reply.result.count, albums: reply.result.albums_loop});
+                    }
+                    return response;
+                });
+        });
+    };
+
+    /**
+     * Search for album given album id
+     * Returns {id, title, artist_id, artist_ids}
+     * @param albumId {string} the album id
+     * @param skip {Number} start at
+     * @param take {Number} take this many
+     * @return {*}
+     */
+    self.albumByAlbumId = function (albumId, skip, take) {
+        return Promise.try(function () {
+            var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
+                t = !_.isFinite(take) && take >= 1 ? take : '-',
+                params = ['albums', s, t, 'tags:atySS'];
+            if (_.isNil(albumId)) {
+                throw new TypeError('albumId');
+            }
+            params.push('album_id:' + albumId);
+            return self.request(self.defaultPlayer, params).then(
+                function (reply) {
+                    var response = {};
+                    if (reply && reply.result) {
+                        _.assign(response, {count: reply.result.count, album: reply.result.albums_loop[0]});
                     }
                     return response;
                 });
@@ -244,7 +300,7 @@ function SqueezeServer(address, port, username, password) {
         return Promise.try(function () {
             var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
-                params = ['tracks', s, t, 'tags:seuSp'];
+                params = ['tracks', s, t, 'tags:aAeugGsSpP'];
             if (_.isNil(albumId)) {
                 throw new TypeError('albumId');
             }
@@ -272,7 +328,7 @@ function SqueezeServer(address, port, username, password) {
         return Promise.try(function () {
             var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
-                params = ['tracks', s, t, 'tags:seuSp'];
+                params = ['tracks', s, t, 'tags:aAeugGsSpP'];
             if (_.isNil(artistId)) {
                 throw new TypeError('artistId');
             }
@@ -300,7 +356,7 @@ function SqueezeServer(address, port, username, password) {
         return Promise.try(function () {
             var s = !_.isFinite(skip) && skip >= 0 ? skip : '-',
                 t = !_.isFinite(take) && take >= 1 ? take : '-',
-                params = ['tracks', s, t, 'tags:seuSp'];
+                params = ['tracks', s, t, 'tags:aAeugGsSpP'];
             if (_.isNil(genreId)) {
                 throw new TypeError('genreId');
             }
@@ -310,6 +366,34 @@ function SqueezeServer(address, port, username, password) {
                     var response = {};
                     if (reply && reply.result) {
                         _.assign(response, {count: reply.result.count, tracks: reply.result.titles_loop});
+                    }
+                    return response;
+                });
+        });
+    };
+
+    /**
+     * Search for genre given genre id
+     * Returns {id, genre}
+     * @param genreId {string} the genre id
+     * @param skip {Number} start at
+     * @param take {Number} take this many
+     * @return {*}
+     */
+    self.genreByGenreId = function (genreId, skip, take) {
+        return Promise.try(function () {
+            var s = !_.isFinite(skip) && skip >= 0 ? skip : '_',
+                t = !_.isFinite(take) && take >= 1 ? take : '_',
+                params = ['genres', s, t];
+            if (_.isNil(genreId)) {
+                throw new TypeError('genreId');
+            }
+            params.push('genre_id:' + genreId);
+            return self.request(self.defaultPlayer, params).then(
+                function (reply) {
+                    var response = {};
+                    if (reply && reply.result) {
+                        _.assign(response, {count: reply.result.count, genre: reply.result.genres_loop[0]});
                     }
                     return response;
                 });
