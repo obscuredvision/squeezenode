@@ -34,7 +34,7 @@ function SqueezeRequest(address, port, username, password) {
 
     /**
      * get the parameters for a player mode
-     * @param mode {string} player mode of type PlayerMode
+     * @param mode {String} player mode of type PlayerMode
      * @return {Array}
      */
     self.playerModeToParams = function (mode) {
@@ -63,7 +63,7 @@ function SqueezeRequest(address, port, username, password) {
 
     /**
      * Get song info by track id or path to file
-     * @param trackIdOrUrl {string|Number} the song to get information for
+     * @param trackIdOrUrl {String|Number} the song to get information for
      * if trackId then it should be a number to a specific track
      * if Url it should be a path with the file:// protocol
      * @return {*} song information

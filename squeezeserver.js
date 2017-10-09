@@ -29,7 +29,7 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * get player ip address given player id
-     * @param playerId {string} the unique player id
+     * @param playerId {String} the unique player id
      */
     self.getPlayerIp = function (playerId) {
         return self.request(self.defaultPlayer, ['player', 'ip', playerId, '?']);
@@ -37,7 +37,7 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * get player name given player id
-     * @param playerId {string} the unique player id
+     * @param playerId {String} the unique player id
      */
     self.getPlayerName = function (playerId) {
         return self.request(self.defaultPlayer, ['player', 'name', playerId, '?']);
@@ -82,7 +82,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for artists given artist name
      * Returns {id, artist}
-     * @param artistName {string} search criteria or all artists if null
+     * @param artistName {String} search criteria or all artists if null
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -107,7 +107,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for albums given album name
      * Returns {id, title, artist_id, artist_ids}
-     * @param albumName {string} search criteria or all albums if null
+     * @param albumName {String} search criteria or all albums if null
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -132,7 +132,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for tracks given tracks name
      * Returns {id, title, artist_id, artist_ids, band_ids, composer_ids, album_id, url, genre_id}
-     * @param trackName {string} search criteria or all tracks if null
+     * @param trackName {String} search criteria or all tracks if null
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -157,7 +157,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for genres given genre name
      * Returns {id, genre}
-     * @param genreName {string} search criteria or all genres if null
+     * @param genreName {String} search criteria or all genres if null
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -182,7 +182,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for playlists given playlist name
      * Returns {id, playlist, url}
-     * @param playlistName {string} search criteria or all playlists if null
+     * @param playlistName {String} search criteria or all playlists if null
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -207,7 +207,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for artist given artist id
      * Returns {id, title, artist_id, artist_ids}
-     * @param artistId {string} the artist id
+     * @param artistId {String} the artist id
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -263,7 +263,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for album given album id
      * Returns {id, title, artist_id, artist_ids}
-     * @param albumId {string} the album id
+     * @param albumId {String} the album id
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -375,7 +375,7 @@ function SqueezeServer(address, port, username, password) {
     /**
      * Search for genre given genre id
      * Returns {id, genre}
-     * @param genreId {string} the genre id
+     * @param genreId {String} the genre id
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {*}
@@ -402,7 +402,7 @@ function SqueezeServer(address, port, username, password) {
 
     /**
      * Search library for tracks, albums, artists
-     * @param term {string} the search term
+     * @param term {String} the search term
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {Promise.<*>}

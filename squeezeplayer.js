@@ -193,10 +193,10 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * Play a song, given its path (url) or
      * a list of songs matching any combination of: genre, artist, album names (NOT ids!!!)
-     * @param url {string} path to the song
-     * @param genre {string} genre name
-     * @param artist {string} artist name
-     * @param album {string} album name
+     * @param url {String} path to the song
+     * @param genre {String} genre name
+     * @param artist {String} artist name
+     * @param album {String} album name
      */
     self.play = function (url, genre, artist, album) {
         return Promise.try(function () {
@@ -224,7 +224,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * get the player name by player id or index
-     * @param nameOrIndex {string} the player id or index
+     * @param nameOrIndex {String} the player id or index
      */
     self.name = function (nameOrIndex) {
         return Promise.try(function () {
@@ -297,7 +297,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * Get the tracks for a specific playlist
-     * @param playlistId {string} the playlist id to look up
+     * @param playlistId {String} the playlist id to look up
      * @param skip {Number} start at
      * @param take {Number} take this many
      * @return {Promise.<*>}
@@ -326,7 +326,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * create a new empty playlist
-     * @param name {string} the new playlist name
+     * @param name {String} the new playlist name
      * @return {Promise.<*>}
      */
     self.newPlaylist = function (name) {
@@ -388,8 +388,8 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * rename playlist
-     * @param playlistId {string} the playlist id
-     * @param name {string} the new playlist name
+     * @param playlistId {String} the playlist id
+     * @param name {String} the new playlist name
      * @param dryRun {Boolean} true is dryrun
      */
     self.renamePlaylist = function (playlistId, name, dryRun) {
@@ -421,7 +421,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * delete playlist
-     * @param playlistId {string} the playlist id
+     * @param playlistId {String} the playlist id
      */
     self.deletePlaylist = function (playlistId) {
         return Promise.try(function () {
@@ -436,8 +436,8 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * add a track to the specified playlist by the track url
-     * @param playlistId {string} the playlist id
-     * @param url {string} the track url (ex: file:///...file.mp3)
+     * @param playlistId {String} the playlist id
+     * @param url {String} the track url (ex: file:///...file.mp3)
      */
     self.addTrackToPlaylistByTrackUrl = function (playlistId, url) {
         return Promise.try(function () {
@@ -453,7 +453,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * add a track to current playlist by the track url
-     * @param url {string} the track url
+     * @param url {String} the track url
      */
     self.addTrackToCurrentPlaylistByTrackUrl = function (url) {
         return Promise.try(function () {
@@ -576,9 +576,9 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * appends all songs matching the specified criteria onto the end of the playlist
      * NOTE: null will be replaced with '*'.  Must have at least one search term
-     * @param genre {string} genre name
-     * @param artist {string} artist name
-     * @param album {string} album name
+     * @param genre {String} genre name
+     * @param artist {String} artist name
+     * @param album {String} album name
      * @return {*}
      */
     self.addTracksToCurrentPlaylistByName = function (genre, artist, album) {
@@ -598,9 +598,9 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * Removes tracks that match the specified genre artist and album criteria from the playlist
      * NOTE: null will be replaced with '*'.  Must have at least one search term
-     * @param genre {string} genre name
-     * @param artist {string} artist name
-     * @param album {string} album name
+     * @param genre {String} genre name
+     * @param artist {String} artist name
+     * @param album {String} album name
      * @return {*}
      */
     self.removeTracksFromCurrentPlaylistByName = function (genre, artist, album) {
@@ -634,7 +634,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * remove track from current playlist by track url
-     * @param url {string} the track url
+     * @param url {String} the track url
      */
     self.removeTrackFromCurrentPlaylistByTrackUrl = function (url) {
         return Promise.try(function () {
@@ -681,7 +681,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * load a playlist then issue a stop command so it will not play
-     * @param playlistId {string} the playlist id
+     * @param playlistId {String} the playlist id
      * @return {*}
      */
     self.loadPlaylistAndStop = function (playlistId) {
@@ -692,7 +692,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * inserts the specified song URL to be played immediately after the current song in the current playlist
-     * @param url {string} the track url
+     * @param url {String} the track url
      * @return {*}
      */
     self.insertTrackIntoCurrentPlaylist = function (url) {
