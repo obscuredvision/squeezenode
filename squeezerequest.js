@@ -93,6 +93,16 @@ function SqueezeRequest(address, port, username, password) {
         });
     };
 
+    self.throwError = function(payload) {
+        var message;
+        if (_.isPlainObject(payload)) {
+            message = JSON.stringify(payload);
+        } else {
+            message = payload;
+        }
+        throw new Error(message);
+    };
+
     self.request = function (player, params) {
         var finalParams = [],
             call = Promise.promisify(client.request, {context: client});

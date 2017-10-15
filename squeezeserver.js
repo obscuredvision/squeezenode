@@ -444,7 +444,7 @@ function SqueezeServer(address, port, username, password) {
                     }
                 });
             } else {
-                throw new Error(reply);
+                self.throwError(reply);
             }
         }
 
