@@ -338,11 +338,9 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
             params.push('playlist_id:' + playlistId);
             return self.request(self.defaultPlayer, params).then(
                 function (reply) {
-                    if (reply && _.has(reply, 'result.count') && reply.result.count > 0) {
-                        return {count: reply.result.count};
-                    } else {
-                        self.throwError({message: 'no track(s) in current playlist.'});
-                    }
+                    return {
+                        count: (reply && _.has(reply, 'result.count')) ? reply.result.count : 0
+                    };
                 });
         });
     };
@@ -836,11 +834,9 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      */
     self.currentPlaylistTrackCount = function () {
         return self.request(self.playerId, ['playlist', 'tracks', '?']).then(function (reply) {
-            if (reply && _.has(reply, 'result._tracks') && reply.result._tracks > 0) {
-                return {count: reply.result._tracks};
-            } else {
-                self.throwError({message: 'no track(s) in current playlist.'});
-            }
+            return {
+                count: (reply && _.has(reply, 'result._tracks')) ? reply.result._tracks : 0
+            };
         });
     }
 }
