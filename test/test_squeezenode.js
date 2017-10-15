@@ -78,6 +78,40 @@ describe('Squeezenode', function () {
 });
 
 /*
+describe('playlist', function () {
+        it('update', function () {
+            var currentPlaylist = ['B', 'A', 'C', 'D', 'F', 'G'],
+                updatePlaylist = ['A', 'B', 'C', 'D', 'E'],
+                expected = updatePlaylist;
+
+            var removes = [], adds = [];
+
+            if (updatePlaylist.length < currentPlaylist.length) {
+                currentPlaylist = _.dropRight(currentPlaylist, currentPlaylist.length - updatePlaylist.length);
+            }
+
+            _.forEach(updatePlaylist, function (value, index) {
+                if (index > currentPlaylist.length - 1) {
+                    adds.push({letter: value, index: index});
+                } else if (value !== currentPlaylist[index]) {
+                    removes.push({letter: currentPlaylist[index], index: index});
+                    adds.push({letter: value, index: index});
+                }
+            });
+
+            _.forEachRight(removes, function (value, index) {
+                currentPlaylist.splice(value.index, 1);
+            });
+            _.forEach(adds, function (value, index) {
+                currentPlaylist.splice(value.index, 0, value.letter);
+            });
+
+            expect(expected).to.have.ordered.members(currentPlaylist);
+        });
+    });
+ */
+
+/*
 "file:///mnt/usb/Arc/Arclight/Arc%20-%20Arclight%20-%20Arcadia.mp3"
 "file:///mnt/usb/Arc/Arclight/Arc%20-%20Arclight%20-%20Arclight.mp3"
 "file:///mnt/usb/Arc/Arclight/Arc%20-%20Arclight%20-%20Into%20Dust.mp3"

@@ -421,14 +421,14 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
                 throw new TypeError('playlist');
             }
 
-            return getPlaylistTrackCount(playlist.playlistId).then(function (reply) {
+            return self.getPlaylistTrackCount(playlist.playlistId).then(function (reply) {
                 // remove by index (reverse order)
                 return Promise.map(_.range(reply.count).reverse(), function (index) {
-                    return removeTrackFromPlaylistByIndex(playlist.playlistId, index);
+                    return self.removeTrackFromPlaylistByIndex(playlist.playlistId, index);
                 }).then(function () {
                     // add by url
                     return Promise.map(playlist.tracks, function (track) {
-                        return addTrackToPlaylistByTrackUrl(playlist.playlistId, track.url);
+                        return self.addTrackToPlaylistByTrackUrl(playlist.playlistId, track.url);
                     });
                 });
             });
@@ -752,9 +752,9 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      */
     self.loadPlaylistAndStop = function (playlistId) {
         return Promise.all([
-            loadPlaylist(playlistId),
+            self.loadPlaylist(playlistId),
             Promise.delay(100),
-            mode(PlayerMode.STOP, 1)
+            self.mode(PlayerMode.STOP, 1)
         ]);
     };
 
@@ -765,9 +765,9 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      */
     self.loadPlaylistAndClear = function (playlistId) {
         return Promise.all([
-            loadPlaylist(playlistId),
+            self.loadPlaylist(playlistId),
             Promise.delay(100),
-            clearCurrentPlayList()
+            self.clearCurrentPlayList()
         ]);
     };
 
