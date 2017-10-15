@@ -410,7 +410,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * update existing playlist with tracks
      * @param playlist {*} the new playlist object with schema:
-     * {playlistId: String, tracks: [url: String]}
+     * {playlistId: String, tracks: [url {String}]}
      * @return {Promise.<*>}
      */
     self.updatePlaylist = function (playlist) {
@@ -426,7 +426,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
                 }).then(function () {
                     // add by url
                     return Promise.map(playlist.tracks, function (track) {
-                        return self.addTrackToPlaylistByTrackUrl(playlist.playlistId, track.url);
+                        return self.addTrackToPlaylistByTrackUrl(playlist.playlistId, track);
                     });
                 });
             });
