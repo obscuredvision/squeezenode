@@ -74,7 +74,7 @@ function SqueezeRequest(address, port, username, password) {
 
             if (_.isNil(trackIdOrUrl)) {
                 throw new TypeError('trackIdOrUrl');
-            } else if (trackIdOrUrl.indexOf('file://') !== -1) {
+            } else if (_.indexOf(trackIdOrUrl, 'file://') !== -1) {
                 params.push('url:' + trackIdOrUrl);
             } else {
                 params.push('track_id:' + trackIdOrUrl);

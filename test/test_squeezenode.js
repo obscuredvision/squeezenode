@@ -1,5 +1,7 @@
 'use strict';
 var _ = require('lodash'),
+    uuid = require('uuid/v4'),
+    moment = require('moment'),
     chai = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
     spies = require('chai-spies'),
@@ -11,7 +13,18 @@ chai.use(spies);
 chai.use(chaiAsPromised);
 
 var expect = chai.expect,
-    should = chai.should();
+    should = chai.should(),
+    timerHash = {},
+    timeStart = function () {
+        var i = uuid();
+        timerHash[i] = moment.utc();
+        return i;
+    },
+    timeEnd = function (i, label) {
+        var elapsed = moment.utc().diff(timerHash[i]);
+        delete timerHash[i];
+        console.log(label, elapsed);
+    };
 
 describe('Squeezenode', function () {
 
@@ -21,7 +34,7 @@ describe('Squeezenode', function () {
         username = config.username,
         password = config.password;
 
-    beforeAll(function () {
+    before(function () {
         squeeze = new squeezenode(url, port, username, password);
     });
 
@@ -43,38 +56,38 @@ describe('Squeezenode', function () {
     });
 
     describe('playlist', function () {
-        it('update', function () {
-            var currentPlaylist = ['B', 'A', 'C', 'D', 'F', 'G'],
-                updatePlaylist = ['A', 'B', 'C', 'D', 'E'],
-                expected = updatePlaylist;
-
-            var removes = [], adds = [];
-
-            if (updatePlaylist.length < currentPlaylist.length) {
-                currentPlaylist = _.dropRight(currentPlaylist, currentPlaylist.length - updatePlaylist.length);
-            }
-
-            _.forEach(updatePlaylist, function (value, index) {
-                if (index > currentPlaylist.length - 1) {
-                    adds.push({letter: value, index: index});
-                } else if (value !== currentPlaylist[index]) {
-                    removes.push({letter: currentPlaylist[index], index: index});
-                    adds.push({letter: value, index: index});
-                }
+        var player;
+        before(function () {
+            player = _.find(squeeze.players, function (item) {
+                return item.playerName === 'akrmusic';
             });
 
-            _.forEachRight(removes, function (value, index) {
-                currentPlaylist.splice(value.index, 1);
-            });
-            _.forEach(adds, function (value, index) {
-                currentPlaylist.splice(value.index, 0, value.letter);
-            });
+            expect(player).not.to.be.undefined;
+        });
 
-            expect(expected).to.have.ordered.members(currentPlaylist);
+        it('should get playlist tracks with no song info', function () {
+            var timer = timeStart();
+            return player.getPlaylistTracks(48586, false, 0, 10)
+                .should.be.fulfilled.then(function (response) {
+                    timeEnd(timer, "playlist tracks no info");
+                    response.should.not.to.be.undefined;
+                    response.tracks.length.should.equal(10);
+                    response.tracks[0].should.not.have.property('url');
+                });
+        });
+
+        it('should get playlist tracks with songinfo', function () {
+            this.timeout(4500);
+            var timer = timeStart();
+            return player.getPlaylistTracks(48586, true, 0, 10)
+                .should.be.fulfilled.then(function (response) {
+                    timeEnd(timer, "playlist tracks with info");
+                    response.should.not.be.undefined;
+                    response.tracks.length.should.equal(10);
+                    response.tracks[0].should.have.property('url');
+                });
         });
     });
-
-
 });
 
 /*

@@ -302,17 +302,13 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
      * @param take {Number} take this many
      * @return {Promise.<*>}
      */
-    self.getPlaylistTracks = function (playlistId, skip, take) {
+    self.getPlaylistTracks = function (playlistId, addSongInfo, skip, take) {
         return Promise.try(function () {
             var s = _.isFinite(skip) && skip >= 0 ? skip : 0,
                 t = _.isFinite(take) && take >= 1 ? take : 100000,
-                params = ['playlists', 'tracks', s, t, 'tags:aAsSelgGpPcdtyuJ'];
-            if (_.isNil(playlistId)) {
-                throw new TypeError('playlistId');
-            }
-            params.push('playlist_id:' + playlistId);
-            return self.request(self.defaultPlayer, params).then(
-                function (reply) {
+                isSongInfo = _.isBoolean(addSongInfo) ? addSongInfo : false,
+                params = ['playlists', 'tracks', s, t, 'tags:'],
+                noSongInfo = Promise.method(function (reply) {
                     var response = {};
                     if (reply && reply.result) {
                         response.count = reply.result.count;
@@ -320,7 +316,32 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
                         response.tracks = reply.result.playlisttracks_loop;
                     }
                     return response;
+                }),
+                withSongInfo = Promise.method(function (reply) {
+                    if (reply && reply.result) {
+                        return Promise.map(reply.result.playlisttracks_loop, function (track) {
+                            return self.songInfo(track.id);
+                        }).then(function (tracks) {
+                            var response = {};
+                            response.count = reply.result.count;
+                            response.title = reply.result.__playlistTitle;
+                            response.tracks = tracks;
+                            return response;
+                        });
+                    } else {
+                        return noSongInfo(reply);
+                    }
                 });
+
+            if (_.isNil(playlistId)) {
+                throw new TypeError('playlistId');
+            }
+            params.push('playlist_id:' + playlistId);
+
+
+            return self.request(self.defaultPlayer, params).then(function (reply) {
+                return (isSongInfo) ? withSongInfo(reply) : noSongInfo(reply);
+            });
         });
     };
 
@@ -377,21 +398,21 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
 
     /**
      * create a new playlist with tracks
-     * @param payload {*} the new playlist object with schema:
-     * {name: String, tracks: [url: String]}
+     * @param playlist {*} the new playlist object with schema:
+     * {name: {String}, tracks: [url: {String}]}
      * @return {Promise.<*>}
      */
-    self.createPlaylist = function (payload) {
+    self.createPlaylist = function (playlist) {
         return Promise.try(function () {
-            if (_.isNil(payload) || !_.isPlainObject(payload) || !_.has(payload, 'name')) {
+            if (_.isNil(playlist) || !_.isPlainObject(playlist) || !_.has(playlist, 'name')) {
                 throw new TypeError('payload');
             }
 
             // we need to create playlist first
-            return newPlaylist(payload.name).then(function (response) {
+            return newPlaylist(playlist.name).then(function (response) {
                 if (_.has(response, 'id')) {
                     // playlist created now add tracks
-                    return Promise.map(payload.tracks, function (track) {
+                    return Promise.map(playlist.tracks, function (track) {
                         return addTrackToPlaylistByTrackUrl(response.id, track);
                     }).then(function () {
                         // return newly create playlist id
@@ -453,18 +474,18 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
     /**
      * rename playlist
      * @param playlistId {String} the playlist id
-     * @param name {String} the new playlist name
-     * @param dryRun {Boolean} true is dryrun
+     * @param newName {String} the new playlist name
+     * @param dryRun {Boolean} true is dryrun (defaults true if blank)
      */
-    self.renamePlaylist = function (playlistId, name, dryRun) {
+    self.renamePlaylist = function (playlistId, newName, dryRun) {
         return Promise.try(function () {
             var _dryRun = (_.isNil(dryRun) || _.isBoolean(dryRun) && dryRun) ? 1 : 0,
                 params = ['playlists', 'rename'];
-            if (_.isNil(playlistId) || _.isNil(name)) {
-                throw new TypeError('playlistId or name');
+            if (_.isNil(playlistId) || _.isNil(newName)) {
+                throw new TypeError('playlistId, newName');
             }
             params.push('playlist_id:' + playlistId);
-            params.push('newname:' + name);
+            params.push('newname:' + newName);
             // playlist not renamed when dry_run:1 and property 'overwritten_playlist_id' exists
             params.push('dry_run:' + _dryRun);
             self.request(self.defaultPlayer, params).then(
@@ -474,7 +495,7 @@ function SqueezePlayer(playerId, playerName, address, port, username, password) 
                             self.throwError({
                                 message: 'a playlist with that name already exists.',
                                 meta: {
-                                    overwrittenPlaylistId: reply.result.overwritten_playlist_id,
+                                    overwrittenPlaylistId: reply.result.overwritten_playlist_id
                                 }
                             })
                         }
