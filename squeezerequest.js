@@ -87,6 +87,7 @@ function SqueezeRequest(address, port, username, password) {
                         _.forEach(reply.result.songinfo_loop, function (value) {
                             _.assign(response, value);
                         });
+                        response.exists = !(_.keys(response).length <= 4 && (!_.has(response, 'title') || _.isNil(response.title)))
                     }
                     return response;
                 });

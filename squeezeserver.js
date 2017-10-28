@@ -432,6 +432,34 @@ function SqueezeServer(address, port, username, password) {
         });
     };
 
+    /**
+     * Checks library to see if track exists
+     * @param trackIdOrUrl {String} the track id or track url
+     * @return {Promise.<Boolean>}
+     */
+    self.trackExists = function (trackIdOrUrl) {
+        return Promise.try(function () {
+            var params = [],
+                isUrl = _.indexOf(trackIdOrUrl, 'file://') !== -1;
+            if (_.isNil(trackIdOrUrl)) {
+                throw new TypeError('trackIdOrUrl');
+            } else if (isUrl) {
+                params = params.concat(['songinfo', '0', '10', 'url:' + trackIdOrUrl]);
+            } else {
+                params = params.concat(['title', '-', '-', 'track_id:' + trackIdOrUrl]);
+            }
+
+            return self.request(self.defaultPlayer, params).then(
+                function (reply) {
+                    if (isUrl) {
+                        return (reply && reply.result && _.keys(reply.result).length < 1 || _.isNil(reply.result.title));
+                    } else {
+                        return (reply && reply.result && reply.result.count > 0);
+                    }
+                });
+        });
+    };
+
     self.register = function () {
         self.players = {};
 

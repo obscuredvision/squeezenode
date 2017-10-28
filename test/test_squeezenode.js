@@ -67,11 +67,11 @@ describe('Squeezenode', function () {
 
         it('should get playlist tracks with no song info', function () {
             var timer = timeStart();
-            return player.getPlaylistTracks(48586, false, 0, 10)
+            return player.getPlaylistTracks(48996, false, 0, 10)
                 .should.be.fulfilled.then(function (response) {
                     timeEnd(timer, "playlist tracks no info");
                     response.should.not.to.be.undefined;
-                    response.tracks.length.should.equal(10);
+                    response.tracks.length.should.not.be.above(10);
                     response.tracks[0].should.not.have.property('url');
                 });
         });
@@ -79,12 +79,12 @@ describe('Squeezenode', function () {
         it('should get playlist tracks with songinfo', function () {
             this.timeout(4500);
             var timer = timeStart();
-            return player.getPlaylistTracks(48586, true, 0, 10)
+            return player.getPlaylistTracks(48996, true, 0, 10)
                 .should.be.fulfilled.then(function (response) {
                     timeEnd(timer, "playlist tracks with info");
-                    response.should.not.be.undefined;
-                    response.tracks.length.should.equal(10);
-                    response.tracks[0].should.have.property('url');
+                    expect(response).not.to.be.undefined;
+                    expect(response.tracks).lengthOf.to.not.be.above(10);
+                    expect(response.tracks[0]).to.have.property('url');
                 });
         });
     });
